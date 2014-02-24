@@ -1,6 +1,0 @@
-[
-  {:db/id #db/id[:friendui -1000001],
-          :user/email "admin@localhost.de"
-          :user/password "$2a$10$OjYx9.WuhAX3IBeb7YCKzecF6liQRhFdw3ZVmIibyZd0UiRrjN9U."
-          :user/activated true}
-  ]

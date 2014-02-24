@@ -1,11 +1,27 @@
 (ns friendui.models.db
-  (:use [datomic.api :only [q db] :as d]))
+  (:use [datomic.api :only [q db] :as d])
+  (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]))
 
-(def uri-datomic "datomic:dev://localhost:4334/friendui")
 
-(def conn-datomic (d/connect uri-datomic))
+(defn from-edn [fname]
+  "reads an edn file from classpath"
+  (with-open [rdr (-> (io/resource fname)
+                      io/reader
+                      java.io.PushbackReader.)]
+    (edn/read rdr)))
 
-(defn dbc [] (db conn-datomic))
+(def db-config (from-edn "friendui-config.edn"))
+(def uri-datomic (:datomic-uri db-config))
+(def partition-id (keyword (:partition-id db-config)))
+(def username-kw (keyword (:username-kw db-config)))
+(def pw-kw (keyword (:pw-kw db-config)))
+(def activated-kw (keyword (:activated-kw db-config)))
+(def role-kw (keyword (:role-kw db-config)))
+
+(defn conn-datomic [] (d/connect uri-datomic))
+
+(defn dbc [] (db (conn-datomic)))
 
 (defn find-by-column-and-search-string [column search]
   (q '[:find ?c
@@ -14,6 +30,9 @@
      (dbc)
      column
      search))
+
+(defn get-entity [id]
+  (d/entity (dbc) (ffirst id)))
 
 
 

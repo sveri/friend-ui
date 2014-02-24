@@ -1,4 +1,0 @@
-{
-  :datomic-uri "datomic:dev://localhost:4334/friendui"
-  :datomic-partition "lweb"
-  }

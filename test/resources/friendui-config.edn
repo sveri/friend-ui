@@ -1,0 +1,8 @@
+{
+  :datomic-uri "datomic:mem://localhost:4334/friendui"
+  :partition-id "friendui"
+  :username-kw "user/email"
+  :pw-kw "user/password"
+  :activated-kw "user/activated"
+  :role-kw "user/role"
+  }
