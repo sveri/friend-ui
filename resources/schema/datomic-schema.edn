@@ -13,7 +13,6 @@
   ;; users
   {:db/id #db/id [:db.part/db]
           :db/ident :user/email
-          :db/index true
           :db/unique :db.unique/identity
           :db/valueType :db.type/string
           :db/cardinality :db.cardinality/one

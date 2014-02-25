@@ -55,3 +55,10 @@
         (count (set (map second (user/get-user-password-role-map)))) => 4
         (count (set (map #(nth % 2) (user/get-user-password-role-map)))) => 1
         ))
+
+(fact "username exists"
+      (let [email "sv@sv.de" pw "sv" role "free"]
+        (user/username-exists email) => false
+        (user/create-user email pw role)
+        (user/username-exists email) => true
+        ))

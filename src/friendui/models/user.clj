@@ -5,7 +5,8 @@
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])))
 
-
+(defn username-exists [username]
+  (if (> (count (find-by-column-and-search-string username-kw username)) 0) true false))
 
 
 (defn create-user [email password role]
