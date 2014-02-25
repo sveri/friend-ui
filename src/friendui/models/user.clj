@@ -18,7 +18,13 @@
                                   role-kw      role}]))
   {:username email :roles #{(keyword role)}})
 
-
+(defn get-user-password-role-map []
+  (let [user-ids (find-all-from-column username-kw)]
+    (doall (for [id user-ids]
+             (let [user (get-entity-from-vec id)]
+               [(username-kw user) (pw-kw user) (role-kw user)])
+             )))
+  )
 
 (def users {"admin" {:username "admin"
                      :password (creds/hash-bcrypt "zzzzzz")

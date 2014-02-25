@@ -31,8 +31,14 @@
      column
      search))
 
-(defn get-entity [id]
+(defn find-all-from-column [column]
+  (d/q '[:find ?c :in $ ?column :where [?c ?column]] (dbc) column))
+
+(defn get-entity-from-double-vec [id]
   (d/entity (dbc) (ffirst id)))
+
+(defn get-entity-from-vec [id]
+  (d/entity (dbc) (first id)))
 
 
 

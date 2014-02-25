@@ -12,5 +12,5 @@ pom.xml.asc
 .classpath
 *.prefs
 *.idea
-/lweb.iml
-/lweb.log
+*.iml
+*.log

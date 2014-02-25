@@ -31,9 +31,27 @@
             user (user/create-user email pw role)
             found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
         (count found-entity) => 1
-        (:user/email (get-entity found-entity)) => email
-        (:user/role (get-entity found-entity)) => role
-        (:user/activated (get-entity found-entity)) => false
-        (:user/password (get-entity found-entity)) => (creds/hash-bcrypt pw)
+        (:user/email (get-entity-from-double-vec found-entity)) => email
+        (:user/role (get-entity-from-double-vec found-entity)) => role
+        (:user/activated (get-entity-from-double-vec found-entity)) => false
         ))
 
+(fact "insert one user should let me retrieve that one user"
+      (let [email "sv@sv.de" pw "sv" role "free"
+            user (user/create-user email pw role)
+            found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
+        (count found-entity) => 1
+        (:user/email (get-entity-from-double-vec found-entity)) => email
+        (:user/role (get-entity-from-double-vec found-entity)) => role
+        (:user/activated (get-entity-from-double-vec found-entity)) => false
+        ))
+
+
+(fact "get a list of usernames and password (also test if usernames are unique)"
+      (let [mails ["sv@sv.de" "bla@bla.de" "foo@bar.de" "msdf@mdf.com" "foo@bar.de"]]
+        (doall (for [mail mails] (user/create-user mail "pw" "role")))
+        (count (d/q '[:find ?c :where [?c :user/email]] (dbc))) => 4
+        (count (clojure.set/difference (set mails) (set (map first (user/get-user-password-role-map))))) => 0
+        (count (set (map second (user/get-user-password-role-map)))) => 4
+        (count (set (map #(nth % 2) (user/get-user-password-role-map)))) => 1
+        ))
