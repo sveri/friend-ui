@@ -1,4 +1,4 @@
-(ns friendui.util
+(ns friendui.routes.util
   ;(:require [noir.io :as io])
   (:use    [ring.util.response :as response]))
 

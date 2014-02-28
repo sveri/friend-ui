@@ -11,7 +11,8 @@
                  [clojurewerkz/mailer "1.0.0"]
                  [com.taoensso/timbre "3.0.0"]
                  [compojure "1.1.6"]
-                 [selmer "0.5.9"]]
+                 [selmer "0.5.9"]
+                 [lib-noir "0.8.1"]]
   :plugins [[lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
   )
