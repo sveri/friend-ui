@@ -14,10 +14,17 @@
 (def db-config (from-edn "friendui-config.edn"))
 (def uri-datomic (:datomic-uri db-config))
 (def partition-id (keyword (:partition-id db-config)))
+
+;(def username-config (:username-kw db-config))
+;(def pw-config (:pw-kw db-config))
+;(def activated-config (:activated-kw db-config))
+;(def role-config (:role-kw db-config))
 (def username-kw (keyword (:username-kw db-config)))
 (def pw-kw (keyword (:pw-kw db-config)))
 (def activated-kw (keyword (:activated-kw db-config)))
 (def role-kw (keyword (:role-kw db-config)))
+(def hostname (:hostname db-config))
+(def mail-from (:mail-from db-config))
 
 (defn conn-datomic [] (d/connect uri-datomic))
 

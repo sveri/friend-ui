@@ -26,7 +26,7 @@
   {:db/id #db/id [:db.part/db]
           :db/ident :user/role
           :db/index false
-          :db/valueType :db.type/string
+          :db/valueType :db.type/keyword
           :db/cardinality :db.cardinality/one
           :db.install/_attribute :db.part/db}
   {:db/id #db/id [:db.part/db]
@@ -44,6 +44,12 @@
   {:db/id #db/id [:db.part/db]
           :db/ident :user/lastName
           :db/index true
+          :db/valueType :db.type/string
+          :db/cardinality :db.cardinality/one
+          :db.install/_attribute :db.part/db}
+  {:db/id #db/id [:db.part/db]
+          :db/ident :user/activationid
+          :db/index false
           :db/valueType :db.type/string
           :db/cardinality :db.cardinality/one
           :db.install/_attribute :db.part/db}

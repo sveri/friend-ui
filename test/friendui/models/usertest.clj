@@ -3,7 +3,9 @@
             [midje.sweet :refer :all]
             [friendui.models.user :as user]
             [friendui.models.db :refer :all]
-            [cemerick.friend.credentials :as creds]))
+            [friendui.service.user :refer :all]
+            [cemerick.friend.credentials :as creds]
+            ))
 
 (d/create-database uri-datomic)
 (def schema-tx (read-string (slurp "resources/schema/datomic-schema.edn")))
@@ -23,11 +25,10 @@
 (fact "insert one user should return the right map"
       (let [email "sv@sv.de" pw "sv" role "free"
             user (user/create-user email pw role)]
-        (:username user) => email
-        (:roles user) => #{:free}))
+        user => {:username email :roles #{:free} :activated false}))
 
 (fact "insert one user should let me retrieve that one user"
-      (let [email "sv@sv.de" pw "sv" role "free"
+      (let [email "sv@sv.de" pw "sv" role :free
             user (user/create-user email pw role)
             found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
         (count found-entity) => 1
@@ -37,7 +38,7 @@
         ))
 
 (fact "insert one user should let me retrieve that one user"
-      (let [email "sv@sv.de" pw "sv" role "free"
+      (let [email "sv@sv.de" pw "sv" role :free
             user (user/create-user email pw role)
             found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
         (count found-entity) => 1
@@ -59,6 +60,18 @@
 (fact "username exists"
       (let [email "sv@sv.de" pw "sv" role "free"]
         (user/username-exists email) => false
-        (user/create-user email pw role)
+        (user/create-user email pw role) => {:username email :roles #{:free} :activated false}
         (user/username-exists email) => true
+        ))
+
+(fact "generate correct activation link"
+      (let [activationid (generate-activation-id)]
+        (generate-activation-link activationid) => (str "http://example.com/user/activate/" activationid )))
+
+(fact "activate user"
+      (let [email "sv@sv.de" pw "sv" role :free
+            user (user/create-user email pw role)]
+        (user/get-user-by-username email) => {:username email :roles #{role} :activated false}
+        (user/set-user-activated email)
+        (user/get-user-by-username email) => {:username email :roles #{role} :activated true}
         ))
