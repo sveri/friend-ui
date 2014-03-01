@@ -7,11 +7,10 @@
             [friendui.service.user :as userservice]))
 
 
-
+(def activationid-kw :user/activationid)
 
 (defn username-exists [username]
   (if (> (count (find-by-column-and-search-string username-kw username)) 0) true false))
-
 
 
 (defn create-user [email password role]
@@ -24,11 +23,11 @@
                                     pw-kw        pw_crypted
                                     activated-kw false
                                     role-kw      (keyword role)
-                                   :user/activationid activationid
+                                    activationid-kw activationid
                                     }])
       (userservice/send-activation-email email activationid)
-      {:username email :roles #{(keyword role)} :activated false})))
-
+      ;{:username email :roles #{(keyword role)} :activated false}
+      )))
 
 (defn get-user-password-role-map []
   (let [user-ids (find-all-from-column username-kw)]
@@ -46,6 +45,27 @@
 
 (defn set-user-activated [username]
   @(d/transact (conn-datomic) [{:db/id [username-kw username], activated-kw true}]))
+
+
+(defn account-activated [activationid]
+  (let [id (find-by-column-and-search-string activated-kw activationid)]
+    (if (= (activated-kw id) true) true false)))
+
+(defn activate-account [activationid]
+  (let [id (find-by-column-and-search-string activationid-kw activationid)
+        user-entity (get-entity-from-double-vec id)]
+    @(d/transact (conn-datomic) [{:db/id (ffirst id)
+                                activated-kw true}])))
+
+(defn get-user-for-activation-id [id]
+  (let [id (find-by-column-and-search-string activationid-kw id)
+        user-entity (get-entity-from-double-vec id)]
+    {:username (username-kw user-entity)
+     :roles #{(role-kw user-entity)}}))
+
+(defn is-user-activated [username]
+  (let [id (find-by-column-and-search-string username-kw username)]
+    (if (= (activated-kw id) true) true false)))
 
 (def users {"admin" {:username "admin"
                      :password (creds/hash-bcrypt "zzzzzz")

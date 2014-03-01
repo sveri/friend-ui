@@ -8,44 +8,37 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6">
+        <!--<div class="col-md-6">-->
 
-            <form class="form-horizontal" role="form" action="/user/signup" method="POST">
-                <div class="form-group">
-                    <label for="email" class="col-sm-2 control-label">Email</label>
+        <h3>Please create your account</h3>
 
-                    {% if id-error %}
-                    <div class="alert alert-danger">{{id-error}}</div>
-                    {% endif %}
+        <form action="/user/signup" method="POST">
+            <div class="form-group col-md-6">
+                <label for="email">Email</label>
+                {% if id-error %}
+                <div class="alert alert-danger">{{id-error}}</div>
+                {% endif %}
+                <p>
+                    <input class="form-control" id="email" name="email" tabindex="1" type="text"/>
+                </p>
+                <label for="password">Password</label>
+                {% if pass-error %}
+                <div class="alert alert-danger">{{pass-error}}</div>
+                {% endif %}
+                <p>
+                    <input class="form-control" id="password" name="password" tabindex="2" type="password"/>
+                </p>
+                <label for="confirm">Confirm Password</label>
+                {% if confirm-error %}
+                <div class="alert alert-danger">{{confirm-error}}</div>
+                {% endif %}
+                <p>
+                    <input class="form-control" id="confirm" name="confirm" tabindex="3" type="password"/>
+                </p>
+                <input class="btn" tabindex="4" type="submit" value="Create Account">
+            </div>
+        </form>
 
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" name="email" id="email" placeholder="Email">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="password" class="col-sm-2 control-label">Password</label>
-
-                    <div class="col-sm-10">
-                        <input type="password" class="form-control" name="password" id="password"
-                               placeholder="Password">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="confirm" class="col-sm-2 control-label">Repeat Password</label>
-
-                    <div class="col-sm-10">
-                        <input type="password" class="form-control" name="confirm" id="confirm"
-                               placeholder="Repeat Password">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-default">Sign in</button>
-                    </div>
-                </div>
-            </form>
-
-        </div>
 
         <div class="col-md-6">
 

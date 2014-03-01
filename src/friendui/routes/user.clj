@@ -15,13 +15,15 @@
 
 (defn validRegister? [email pass confirm]
   (vali/rule (vali/has-value? email)
-             [:id "Email is required"])
+             [:id "An email address is required"])
   (vali/rule (vali/is-email? email)
-             [:id "valid Email is required"])
+             [:id "A valid email is required"])
+  (vali/rule (not (db/username-exists email))
+             [:id "This username exists in the database. Please choose another one."])
   (vali/rule (vali/min-length? pass 5)
-             [:pass "password must be at least 5 characters"])
+             [:pass "Password must be at least 5 characters"])
   (vali/rule (= pass confirm)
-             [:confirm "entered passwords do not match"])
+             [:confirm "Entered passwords do not match"])
   (not (vali/errors? :id :pass :confirm)))
 
 
@@ -39,40 +41,45 @@
 
 (defn signup []
   (layout/render "user/signup.html"
-                 {:id-error    (vali/on-error :id first)
-                  :pass-error  (vali/on-error :pass first)
-                  :pass1-error (vali/on-error :confirm first)}))
+                 {:id-error      (vali/on-error :id first)
+                  :pass-error    (vali/on-error :pass first)
+                  :confirm-error (vali/on-error :confirm first)}))
 
-(defn handle-signup [email password confirm req]
+(defn account-activated []
+  (layout/render "user/account-activated.html"))
+
+(defn activate-account [id]
+  (println (db/get-user-for-activation-id id))
+  (if (not (db/account-activated id))
+    (db/activate-account id))
+  (friend/merge-authentication
+    (redirect "/")
+    (db/get-user-for-activation-id id))
+  )
+
+
+(defn account-created []
+  (layout/render "user/account-created.html"))
+
+(defn handle-signup [email password confirm]
   (if (validRegister? email password confirm)
     (do
       (db/create-user email password "free")
-      (redirect "/" :flash "Your new account was registered. Please activate it now."))
+      ;(redirect "/" :flash "Your new account was registered. Please activate it now.")
+      (account-created)
+      )
     (signup)
     ))
-;(defn handle-registration [id pass pass1]
-;  (if (valid? id pass pass1)
-;    (try
-;      (do
-;        (db/create-user {:id id :pass (crypt/encrypt pass)})
-;        (session/put! :user-id id)
-;        (resp/redirect "/"))
-;      (catch Exception ex
-;        (vali/rule false [:id (.getMessage ex)])
-;        (register)))
-;    (register id)))
-
 
 (defroutes user-routes
-           (GET "/user/login" []
-                (login))
+           (GET "/user/login" [] (login))
            (GET "/user/signup" [] (signup))
-           (POST "/user/signup" [email password confirm req]
-                 (handle-signup email password confirm req))
-           (GET "/user/admin" request
-                (friend/authorize #{:admin}
-                                  (admin)))
-           (friend/logout
-             (ANY "/user/logout" [] (redirect "/")))
-
+           (POST "/user/signup" [email password confirm]
+                 (handle-signup email password confirm))
+           (GET "/user/accountcreated" [] (account-created))
+           (GET "/user/activate/:id" [id] (activate-account id))
+           (GET "/user/accountactivated" [] (account-activated))
+           (GET "/user/admin" request (friend/authorize #{:admin} (admin)))
+           (GET "/user/freetest" [] (friend/authorize #{:free} (account-created)))
+           (friend/logout (ANY "/user/logout" [] (redirect "/")))
            )
