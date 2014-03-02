@@ -14,7 +14,7 @@
 
 (defn send-activation-email [email activationid]
   (try
-    (deliver-email {:from mail-from, :to [email] :subject "Please activate your ARP account."}
-                   "templates/email/activation.mustache" {:activationlink (generate-activation-link activationid)})
+    (future (deliver-email {:from mail-from, :to [email] :subject "Please activate your ARP account."}
+                   "templates/email/activation.mustache" {:activationlink (generate-activation-link activationid)}))
     (catch Exception e (timbre/error "Could not send email - Is the SENDMAIL variable set?\n" e)))
   )

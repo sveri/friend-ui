@@ -7,8 +7,9 @@
             [friendui.models.user :as db]
             [noir.validation :as vali]))
 
-(defn login []
-  (layout/render "user/login.html"))
+(defn login [& [login_failed]]
+  (layout/render "user/login.html"
+                 (if login_failed {:error "Wrong username/password combo, or your account is not activated yet."})))
 
 (defn admin []
   (layout/render "user/profile.html"))
@@ -26,19 +27,6 @@
              [:confirm "Entered passwords do not match"])
   (not (vali/errors? :id :pass :confirm)))
 
-
-;(defn handle-signup [email password confirm req]
-;  (if (and (not-any? str/blank? [email password confirm])
-;           (= password confirm))
-;    (let [user (db/create-user email password "free")]
-;      ;; HERE IS WHERE YOU'D PUSH THE USER INTO YOUR DATABASES if desired
-;      (friend/merge-authentication
-;        (redirect "/")
-;        ;(redirect (misc/context-uri req username))
-;        user))
-;    (assoc (redirect (str (:context req) "/")) :flash "passwords don't match!")))
-
-
 (defn signup []
   (layout/render "user/signup.html"
                  {:id-error      (vali/on-error :id first)
@@ -49,7 +37,6 @@
   (layout/render "user/account-activated.html"))
 
 (defn activate-account [id]
-  (println (db/get-user-for-activation-id id))
   (if (not (db/account-activated id))
     (db/activate-account id))
   (friend/merge-authentication
@@ -65,14 +52,16 @@
   (if (validRegister? email password confirm)
     (do
       (db/create-user email password "free")
-      ;(redirect "/" :flash "Your new account was registered. Please activate it now.")
-      (account-created)
-      )
+      (account-created))
     (signup)
     ))
 
+(defn profile []
+  (println (:username (friend/current-authentication)))
+  (layout/render "user/profile.html"))
+
 (defroutes user-routes
-           (GET "/user/login" [] (login))
+           (GET "/user/login" [login_failed] (login login_failed))
            (GET "/user/signup" [] (signup))
            (POST "/user/signup" [email password confirm]
                  (handle-signup email password confirm))
@@ -81,5 +70,6 @@
            (GET "/user/accountactivated" [] (account-activated))
            (GET "/user/admin" request (friend/authorize #{:admin} (admin)))
            (GET "/user/freetest" [] (friend/authorize #{:free} (account-created)))
+           (GET "/user/profile" [] (friend/authenticated (profile)))
            (friend/logout (ANY "/user/logout" [] (redirect "/")))
            )

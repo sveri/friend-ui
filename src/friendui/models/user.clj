@@ -26,7 +26,6 @@
                                     activationid-kw activationid
                                     }])
       (userservice/send-activation-email email activationid)
-      ;{:username email :roles #{(keyword role)} :activated false}
       )))
 
 (defn get-user-password-role-map []
@@ -37,10 +36,17 @@
              )))
   )
 
-(defn get-user-by-username [username]
-        (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))]
-          (into {} [[:username (username-kw db-id)] [:roles #{(role-kw db-id)}] [:activated (activated-kw db-id)]])
-  ))
+(defn get-user-by-username
+  "retrieves the users important fields
+  if pw param is set, it will give the password back too in map"
+  [username & pw]
+  (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))
+        user (into {} [[:username (username-kw db-id)] [:roles #{(role-kw db-id)}] [:activated (activated-kw db-id)]])]
+    (if pw
+      (merge user (into {} [[:password (pw-kw db-id)]]))
+      user
+      )
+    ))
 
 
 (defn set-user-activated [username]
@@ -64,8 +70,10 @@
      :roles #{(role-kw user-entity)}}))
 
 (defn is-user-activated [username]
-  (let [id (find-by-column-and-search-string username-kw username)]
-    (if (= (activated-kw id) true) true false)))
+  (if (= (:activated (get-user-by-username username)) true) true false))
+
+(defn login-user [username]
+  (if (is-user-activated username) (get-user-by-username username true)))
 
 (def users {"admin" {:username "admin"
                      :password (creds/hash-bcrypt "zzzzzz")
@@ -79,7 +87,7 @@
             })
 
 (def friend-settings
-  {:credential-fn             (partial creds/bcrypt-credential-fn users)
+  {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
    :workflows                 [(workflows/interactive-form)]
    :login-uri                 "/user/login"
    :unauthorized-redirect-uri "/user/login"

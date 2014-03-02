@@ -11,6 +11,11 @@
         <div class="col-md-6">
 
             <form class="form-horizontal" role="form" action="/user/login" method="POST">
+
+                {% if error %}
+                <div class="alert alert-danger">{{error}}</div>
+                {% endif %}
+
               <div class="form-group">
                 <label for="email" class="col-sm-2 control-label">Email</label>
                 <div class="col-sm-10">
