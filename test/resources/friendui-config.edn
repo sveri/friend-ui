@@ -7,4 +7,9 @@
   :role-kw "user/role"
   :hostname "http://example.com/" ;used for generation of activation link
   :mail-from "example@example.com" ;used as from mail address
+  :additional-profile-fields [
+                               { :jirauser {:type textfield } }
+                               { :jirapassword {:type password} }
+                               { :jiraurl {:type textfield} }
+                               ]
   }
