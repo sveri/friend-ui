@@ -75,16 +75,7 @@
 (defn login-user [username]
   (if (is-user-activated username) (get-user-by-username username true)))
 
-(def users {"admin" {:username "admin"
-                     :password (creds/hash-bcrypt "zzzzzz")
-                     :roles    #{:admin}}
-            "vip"   {:username "vip"
-                     :password (creds/hash-bcrypt "zzzzzz")
-                     :roles    #{:vip}}
-            "free"  {:username "free"
-                     :password (creds/hash-bcrypt "zzzzzz")
-                     :roles    #{:free}}
-            })
+(defn update-user [username ])
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)

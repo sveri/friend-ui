@@ -80,3 +80,12 @@
         (:password user-fetched) => truthy
         (:password (user/get-user-by-username email)) => falsey
         ))
+
+(fact "user update with a supplied map"
+      (let [email "sv@sv.de" pw "sv" role :free
+            old-user (user/create-user email pw role)
+            testmap {:username email :jirauser "user" :jirapassword "password" :jiraurl "url"}
+            updated-user (user/get-user-by-username email)
+            ]
+
+        ))
