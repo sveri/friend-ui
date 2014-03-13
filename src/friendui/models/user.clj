@@ -33,21 +33,22 @@
     (doall (for [id user-ids]
              (let [user (get-entity-from-vec id)]
                [(username-kw user) (pw-kw user) (role-kw user)])
-             )))
-  )
+             ))))
+
+(defn- get-roles [db-id]
+  "retrieves all roles a user belongs to and returns them as a set.
+  Username should be an entity id"
+  #{(role-kw db-id)})
 
 (defn get-user-by-username
   "retrieves the users important fields
   if pw param is set, it will give the password back too in map"
   [username & pw]
   (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))
-        user (into {} [[:username (username-kw db-id)] [:roles #{(role-kw db-id)}] [:activated (activated-kw db-id)]])]
+        user (assoc (select-keys db-id all-namespaced-profile-keywords) role-kw (get-roles db-id))]
     (if pw
       (merge user (into {} [[:password (pw-kw db-id)]]))
-      user
-      )
-    ))
-
+      user)))
 
 (defn set-user-activated [username]
   @(d/transact (conn-datomic) [{:db/id [username-kw username], activated-kw true}]))
@@ -70,12 +71,11 @@
      :roles #{(role-kw user-entity)}}))
 
 (defn is-user-activated [username]
-  (if (= (:activated (get-user-by-username username)) true) true false))
+  (if (= (activated-kw (get-user-by-username username)) true) true false))
 
-(defn login-user [username]
-  (if (is-user-activated username) (get-user-by-username username true)))
+(defn login-user [username] (if (is-user-activated username) (get-user-by-username username true)))
 
-(defn update-user [username ])
+(defn update-user [username data] @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)

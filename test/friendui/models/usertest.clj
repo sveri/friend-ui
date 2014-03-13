@@ -10,7 +10,7 @@
 (d/create-database uri-datomic)
 (def schema-tx (read-string (slurp "resources/schema/datomic-schema.edn")))
 
-
+(def default-role :free)
 
 (defn delete-and-create-db []
   (d/delete-database uri-datomic)
@@ -23,37 +23,36 @@
       (if (conn-datomic) :truthy :falsey) => :truthy)
 
 (fact "insert one user should let me retrieve that one user"
-      (let [email "sv@sv.de" pw "sv" role :free
+      (let [email "sv@sv.de" pw "sv" role default-role
             user (user/create-user email pw role)
-            found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
+            found-entity (d/q '[:find ?c :in $ ?column :where [?c ?column]] (dbc) username-kw)]
         (count found-entity) => 1
-        (:user/email (get-entity-from-double-vec found-entity)) => email
-        (:user/role (get-entity-from-double-vec found-entity)) => role
-        (:user/activated (get-entity-from-double-vec found-entity)) => false
+        (username-kw (get-entity-from-double-vec found-entity)) => email
+        (role-kw (get-entity-from-double-vec found-entity)) => role
+        (activated-kw (get-entity-from-double-vec found-entity)) => false
         ))
 
 (fact "insert one user should let me retrieve that one user"
-      (let [email "sv@sv.de" pw "sv" role :free
+      (let [email "sv@sv.de" pw "sv" role default-role
             user (user/create-user email pw role)
-            found-entity (d/q '[:find ?c :where [?c :user/email]] (dbc))]
+            found-entity (d/q '[:find ?c :in $ ?col :where [?c ?col]] (dbc) username-kw)]
         (count found-entity) => 1
-        (:user/email (get-entity-from-double-vec found-entity)) => email
-        (:user/role (get-entity-from-double-vec found-entity)) => role
-        (:user/activated (get-entity-from-double-vec found-entity)) => false
+        (username-kw (get-entity-from-double-vec found-entity)) => email
+        (role-kw (get-entity-from-double-vec found-entity)) => role
+        (activated-kw (get-entity-from-double-vec found-entity)) => false
         ))
-
 
 (fact "get a list of usernames and password (also test if usernames are unique)"
       (let [mails ["sv@sv.de" "bla@bla.de" "foo@bar.de" "msdf@mdf.com" "foo@bar.de"]]
-        (doall (for [mail mails] (user/create-user mail "pw" "role")))
-        (count (d/q '[:find ?c :where [?c :user/email]] (dbc))) => 4
+        (doall (for [mail mails] (user/create-user mail "pw" :role)))
+        (count (d/q '[:find ?c :in $ ?col :where [?c ?col]] (dbc) username-kw)) => 4
         (count (clojure.set/difference (set mails) (set (map first (user/get-user-password-role-map))))) => 0
         (count (set (map second (user/get-user-password-role-map)))) => 4
         (count (set (map #(nth % 2) (user/get-user-password-role-map)))) => 1
         ))
 
 (fact "username exists"
-      (let [email "sv@sv.de" pw "sv" role "free"]
+      (let [email "sv@sv.de" pw "sv" role default-role]
         (user/username-exists email) => false
         (user/create-user email pw role)
         (user/username-exists email) => true
@@ -64,28 +63,36 @@
         (generate-activation-link activationid) => (str "http://example.com/user/activate/" activationid )))
 
 (fact "activate user"
-      (let [email "sv@sv.de" pw "sv" role :free
+      (let [email "sv@sv.de" pw "sv" role default-role
             user (user/create-user email pw role)]
-        (user/get-user-by-username email) => {:username email :roles #{role} :activated false}
+        (user/get-user-by-username email) => {username-kw email role-kw #{role} activated-kw false}
         (user/is-user-activated email) => false
         (user/set-user-activated email)
-        (user/get-user-by-username email) => {:username email :roles #{role} :activated true}
+        (user/get-user-by-username email) => {username-kw email role-kw #{role} activated-kw true}
         (user/is-user-activated email) => true
         ))
 
 (fact "get-username-should-add-password"
-      (let [email "sv@sv.de" pw "sv" role :free
+      (let [email "sv@sv.de" pw "sv" role default-role
             user (user/create-user email pw role)
             user-fetched (user/get-user-by-username email true)]
         (:password user-fetched) => truthy
         (:password (user/get-user-by-username email)) => falsey
         ))
 
+(fact "retrieve roles for a user"
+      (let [email "sv@sv.de" pw "sv" role default-role
+            _ (user/create-user email pw role)
+            user (user/get-user-by-username email)]
+        (role-kw user) => #{default-role}
+        ))
+
 (fact "user update with a supplied map"
-      (let [email "sv@sv.de" pw "sv" role :free
+      (let [email "sv@sv.de" pw "sv" role default-role jirauser "jirauser" jirapw "jirapw" jiraurl "url"
             old-user (user/create-user email pw role)
-            testmap {:username email :jirauser "user" :jirapassword "password" :jiraurl "url"}
+            testmap {:user/jirausername jirauser :user/jirapassword jirapw :user/jiraurl jiraurl}
+            _ (user/update-user email testmap)
             updated-user (user/get-user-by-username email)
             ]
-
+        (:user/jirapassword updated-user) => jirapw
         ))

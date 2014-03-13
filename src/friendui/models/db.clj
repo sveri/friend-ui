@@ -22,8 +22,12 @@
 (def hostname (:hostname db-config))
 (def mail-from (:mail-from db-config))
 (def add-profile-fields (:additional-profile-fields db-config))
-(def add-profile-keywords (map #(keyword (:id %)) add-profile-fields))
-(def all-user-keys (merge add-profile-keywords :username))
+(def add-profile-keywords (map #(:id %) add-profile-fields))
+
+(def all-namespaced-profile-keywords
+  (do
+    (conj
+      (conj add-profile-keywords activated-kw) username-kw)))
 
 (defn conn-datomic [] (d/connect uri-datomic))
 

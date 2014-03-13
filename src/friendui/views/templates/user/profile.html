@@ -10,15 +10,15 @@
         <form action="/user/profile" method="POST">
 
             <div class="col-md-6">
-                <label for="username">Email</label>
-                {% if id-error %}
-                <div class="alert alert-danger">{{id-error}}</div>
-                {% endif %}
-                <p>
-                    <input class="form-control" id="username" name="username" tabindex="1" type="text" value="{{username}}"/>
-                </p>
+                <!--<label for="username">Email</label>-->
+                <!--{% if id-error %}-->
+                <!--<div class="alert alert-danger">{{id-error}}</div>-->
+                <!--{% endif %}-->
+                <!--<p>-->
+                    <!--<input class="form-control" id="username" name="username" tabindex="1" type="text" value="{{username}}"/>-->
+                <!--</p>-->
 
-                {% for field in add-fields %}
+                {% for field in fields %}
                 <label for="{{field.id}}">{{field.label}}</label>
                 <p>
                     <input class="form-control" id="{{field.id}}" name="{{field.id}}" tabindex="1" type="{{field.type}}"/>

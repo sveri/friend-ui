@@ -5,7 +5,7 @@
             [cemerick.friend :as friend]
             [clojure.string :as str]
             [friendui.models.user :as db]
-            [friendui.models.db :refer [add-profile-fields all-user-keys]]
+            [friendui.models.db :refer [add-profile-fields add-profile-keywords username-kw]]
             [noir.validation :as vali]))
 
 (defn login [& [login_failed]]
@@ -59,10 +59,14 @@
 
 (defn profile []
   (layout/render "user/profile.html"
-                 (assoc {:username (:username (friend/current-authentication))} :add-fields add-profile-fields)))
+                 {:fields add-profile-fields}))
+                 ;(assoc {username-kw (:username (friend/current-authentication))} :add-fields add-profile-fields)))
 
 (defn handle-profile [params]
-  (println (select-keys params all-user-keys))
+  ;(println params)
+  ;(println add-profile-keywords)
+  ;(println (select-keys params add-profile-keywords))
+  (db/update-user (:username (friend/current-authentication)) (select-keys params add-profile-keywords))
   (profile))
 
 (defroutes user-routes
