@@ -13,12 +13,12 @@
 
 (def db-config (from-edn "friendui-config.edn"))
 (def uri-datomic (:datomic-uri db-config))
-(def partition-id (keyword (:partition-id db-config)))
+(def partition-id (:partition-id db-config))
 
-(def username-kw (keyword (:username-kw db-config)))
-(def pw-kw (keyword (:pw-kw db-config)))
-(def activated-kw (keyword (:activated-kw db-config)))
-(def role-kw (keyword (:role-kw db-config)))
+(def username-kw (:username-kw db-config))
+(def pw-kw (:pw-kw db-config))
+(def activated-kw (:activated-kw db-config))
+(def role-kw (:role-kw db-config))
 (def hostname (:hostname db-config))
 (def mail-from (:mail-from db-config))
 (def add-profile-fields (:additional-profile-fields db-config))
@@ -57,6 +57,7 @@
 
 (comment
   ;execute this in the project repl to initialize the db
+  ; not needed for the tests, but something like this should be done in the project that uses friendui
 
   (require '[datomic.api :as d])
   (def uri "datomic:dev://localhost:4334/friendui")
@@ -68,8 +69,5 @@
 
   (def data-tx (read-string (slurp "resources/schema/datomic-data.edn")))
   @(d/transact conn data-tx)
-
-  ;find all releases
-  (d/q '[:find ?e :where [?e :release/name]] (d/db conn))
 
   )

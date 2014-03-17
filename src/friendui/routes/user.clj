@@ -4,8 +4,8 @@
             [ring.util.response :refer [redirect]]
             [cemerick.friend :as friend]
             [clojure.string :as str]
-            [friendui.models.user :as db]
-            [friendui.models.db :refer [add-profile-fields add-profile-keywords username-kw]]
+            [friendui.models.user :as user]
+            [friendui.models.db :as db]
             [noir.validation :as vali]))
 
 (defn login [& [login_failed]]
@@ -20,7 +20,7 @@
              [:id "An email address is required"])
   (vali/rule (vali/is-email? email)
              [:id "A valid email is required"])
-  (vali/rule (not (db/username-exists email))
+  (vali/rule (not (user/username-exists email))
              [:id "This username exists in the database. Please choose another one."])
   (vali/rule (vali/min-length? pass 5)
              [:pass "Password must be at least 5 characters"])
@@ -38,12 +38,11 @@
   (layout/render "user/account-activated.html"))
 
 (defn activate-account [id]
-  (if (not (db/account-activated id))
-    (db/activate-account id))
+  (if (not (user/account-activated id))
+    (user/activate-account id))
   (friend/merge-authentication
     (redirect "/")
-    (db/get-user-for-activation-id id))
-  )
+    (user/get-user-for-activation-id id)))
 
 
 (defn account-created []
@@ -52,28 +51,25 @@
 (defn handle-signup [email password confirm]
   (if (validRegister? email password confirm)
     (do
-      (db/create-user email password "free")
+      (user/create-user email password "free")
       (account-created))
     (signup)
     ))
 
 (defn profile []
   (layout/render "user/profile.html"
-                 {:fields add-profile-fields}))
-                 ;(assoc {username-kw (:username (friend/current-authentication))} :add-fields add-profile-fields)))
+                 {:fields (user/get-profile-data (db/username-kw (friend/current-authentication)))}))
 
 (defn handle-profile [params]
-  ;(println params)
-  ;(println add-profile-keywords)
-  ;(println (select-keys params add-profile-keywords))
-  (db/update-user (:username (friend/current-authentication)) (select-keys params add-profile-keywords))
+  (user/update-user
+    (db/username-kw (friend/current-authentication))
+    (select-keys params db/add-profile-keywords))
   (profile))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
            (GET "/user/signup" [] (signup))
-           (POST "/user/signup" [email password confirm]
-                 (handle-signup email password confirm))
+           (POST "/user/signup" [email password confirm] (handle-signup email password confirm))
            (GET "/user/accountcreated" [] (account-created))
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))

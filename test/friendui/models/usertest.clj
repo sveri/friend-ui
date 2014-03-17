@@ -5,6 +5,7 @@
             [friendui.models.db :refer :all]
             [friendui.service.user :refer :all]
             [cemerick.friend.credentials :as creds]
+            [clojure.set :as set]
             ))
 
 (d/create-database uri-datomic)
@@ -94,5 +95,5 @@
             _ (user/update-user email testmap)
             updated-user (user/get-user-by-username email)
             ]
-        (:user/jirapassword updated-user) => jirapw
+        (set/subset? (set testmap) (set updated-user)) => true
         ))

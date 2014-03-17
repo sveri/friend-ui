@@ -21,7 +21,7 @@
                 {% for field in fields %}
                 <label for="{{field.id}}">{{field.label}}</label>
                 <p>
-                    <input class="form-control" id="{{field.id}}" name="{{field.id}}" tabindex="1" type="{{field.type}}"/>
+                    <input class="form-control" id="{{field.id}}" name="{{field.id}}" tabindex="1" type="{{field.type}}" value="{{field.data}}"/>
                 </p>
                 {% endfor %}
 

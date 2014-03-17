@@ -1,15 +1,15 @@
 {
   :datomic-uri "datomic:mem://localhost:4444/friendui"
-  :partition-id "friendui"
-  :username-kw "user/email"
-  :pw-kw "user/password"
-  :activated-kw "user/activated"
-  :role-kw "user/role"
+  :partition-id :friendui
+  :username-kw :user/email
+  :pw-kw :user/password
+  :activated-kw :user/activated
+  :role-kw :user/role
   :hostname "http://example.com/" ;used for generation of activation link
   :mail-from "example@example.com" ;used as from mail address
   :additional-profile-fields [
-                               { :id ":user/jiraurl" :type "text" :label "Jira URL"}
-                               { :id ":user/jirausername" :type "text" :label "Jira Username"}
-                               { :id ":user/jirapassword" :type "password" :label "Jira Password"}
+                               { :id ":user/jiraurl" :id-kw :user/jiraurl :type "text" :label "Jira URL"}
+                               { :id ":user/jirausername" :id-kw :user/jirausername :type "text" :label "Jira Username"}
+                               { :id ":user/jirapassword" :id-kw :user/jirapassword :type "password" :label "Jira Password"}
                                ]
   }

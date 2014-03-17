@@ -59,14 +59,11 @@
     (if (= (activated-kw id) true) true false)))
 
 (defn activate-account [activationid]
-  (let [id (find-by-column-and-search-string activationid-kw activationid)
-        user-entity (get-entity-from-double-vec id)]
-    @(d/transact (conn-datomic) [{:db/id (ffirst id)
-                                activated-kw true}])))
+  (let [id (find-by-column-and-search-string activationid-kw activationid)]
+    @(d/transact (conn-datomic) [{:db/id (ffirst id) activated-kw true}])))
 
 (defn get-user-for-activation-id [id]
-  (let [id (find-by-column-and-search-string activationid-kw id)
-        user-entity (get-entity-from-double-vec id)]
+  (let [user-entity (get-entity-from-double-vec (find-by-column-and-search-string activationid-kw id))]
     {:username (username-kw user-entity)
      :roles #{(role-kw user-entity)}}))
 
@@ -75,7 +72,16 @@
 
 (defn login-user [username] (if (is-user-activated username) (get-user-by-username username true)))
 
-(defn update-user [username data] @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))
+(defn update-user [username data]
+  @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))
+
+(defn get-profile-data [username]
+  "returns all data that is needed for the profile page"
+  (let [user (get-user-by-username username)]
+    (for [field add-profile-fields]
+      (let [id (:id-kw field)
+            data (get user id)]
+        (assoc field :data data)))))
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
