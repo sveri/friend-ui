@@ -1,6 +1,6 @@
-(defproject friendui "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject de.sveri/friendui "0.1.0"
+  :description "A frontend for friend library using selmer and storing data in datomic"
+  :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
@@ -15,4 +15,6 @@
                  [lib-noir "0.8.1"]]
   :plugins [[lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
+  :deploy-repositories [["clojars-self" {:url "https://clojars.org/repo"
+                                     :sign-releases false}]]
   )
