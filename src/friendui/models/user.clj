@@ -72,10 +72,12 @@
 
 (defn login-user [username]
   (if (is-user-activated username)
-    (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))]
-      (println {:username username :roles (get-roles db-id) :password (pw-kw db-id)})
-      {:username username :roles (get-roles db-id) :password (pw-kw db-id)}
-      )))
+    (do
+      (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))]
+        {:username username :roles (get-roles db-id) :password (pw-kw db-id)}
+      ))
+    )
+  )
 
 (defn update-user [username data]
   @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))

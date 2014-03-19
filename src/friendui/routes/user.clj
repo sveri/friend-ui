@@ -58,7 +58,8 @@
 
 (defn profile []
   (layout/render "user/profile.html"
-                 {:fields (user/get-profile-data (db/username-kw (friend/current-authentication)))}))
+                 (println (db/username-kw (friend/current-authentication)))
+                 {:fields (user/get-profile-data (:username (friend/current-authentication)))}))
 
 (defn handle-profile [params]
   (user/update-user
