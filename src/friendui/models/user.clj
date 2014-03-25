@@ -12,6 +12,8 @@
 (defn username-exists [username]
   (if (> (count (find-by-column-and-search-string username-kw username)) 0) true false))
 
+(defn get-logged-in-username [] (:username (friend/current-authentication)))
+
 
 (defn create-user [email password role]
   (if (not (username-exists email))
@@ -50,9 +52,12 @@
       (merge user (into {} [[:password (pw-kw db-id)]]))
       user)))
 
-(defn set-user-activated [username]
-  @(d/transact (conn-datomic) [{:db/id [username-kw username], activated-kw true}]))
+(defn get-user-db-entity
+  ([] (get-user-db-entity (get-logged-in-username)))
+  ([username]
+   (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))))
 
+(defn set-user-activated [username] @(d/transact (conn-datomic) [{:db/id [username-kw username], activated-kw true}]))
 
 (defn account-activated [activationid]
   (let [id (find-by-column-and-search-string activated-kw activationid)]
@@ -74,10 +79,7 @@
   (if (is-user-activated username)
     (do
       (let [db-id (get-entity-from-double-vec (find-by-column-and-search-string username-kw username))]
-        {:username username :roles (get-roles db-id) :password (pw-kw db-id)}
-      ))
-    )
-  )
+        {:username username :roles (get-roles db-id) :password (pw-kw db-id)}))))
 
 (defn update-user [username data]
   @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))
@@ -89,6 +91,11 @@
       (let [id (:id-kw field)
             data (get user id)]
         (assoc field :data data)))))
+
+(defn update-loggedin-user [data] (update-user (get-logged-in-username) data))
+
+(defn is-logged-in [] (friend/anonymous?))
+
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
