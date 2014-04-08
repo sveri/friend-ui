@@ -6,18 +6,18 @@
 <body>
 
 
-<div class="container-fluid">
+<div id="signup" class="container-fluid block-center">
     <div class="row">
-        <!--<div class="col-md-6">-->
+        <div class="col-md-3" />
 
         <h3>Please create your account</h3>
 
         <form action="/user/signup" method="POST">
             <div class="form-group col-md-6">
                 <label for="email">Email</label>
-                {% if id-error %}
-                <div class="alert alert-danger">{{id-error}}</div>
-                {% endif %}
+
+                <div id="email-error"></div>
+
                 <p>
                     <input class="form-control" id="email" name="email" tabindex="1" type="text"/>
                 </p>
@@ -39,10 +39,7 @@
             </div>
         </form>
 
-
-        <div class="col-md-6">
-
-        </div>
+        <div class="col-md-3" />
 
     </div>
 </div>

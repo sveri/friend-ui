@@ -6,14 +6,23 @@
             [clojure.string :as str]
             [friendui.models.user :as user]
             [friendui.models.db :as db]
-            [noir.validation :as vali]))
+            [noir.validation :as vali]
+            [net.cgrand.enlive-html :as html]
+            [friendui.routes.util :as util]
+            [friendui.globals :as globals]))
 
-(defn login [& [login_failed]]
-  (layout/render "user/login.html"
-                 (if login_failed {:error "Wrong username/password combo, or your account is not activated yet."})))
+(def template-path "friendui/views/templates/user/")
 
-(defn admin []
-  (layout/render "user/profile.html"))
+
+(html/defsnippet error-snippet (str template-path "error-snippet.html") [:div#error] [message]
+                 [:#error] (html/content message))
+
+;(defn login [& [login_failed]]
+;  (layout/render "user/login.html"
+;                 (if login_failed {:error "Wrong username/password combo, or your account is not activated yet."})))
+
+;(defn admin []
+;  (layout/render "user/profile.html"))
 
 (defn validRegister? [email pass confirm]
   (vali/rule (vali/has-value? email)
@@ -28,11 +37,11 @@
              [:confirm "Entered passwords do not match"])
   (not (vali/errors? :id :pass :confirm)))
 
-(defn signup []
-  (layout/render "user/signup.html"
-                 {:id-error      (vali/on-error :id first)
-                  :pass-error    (vali/on-error :pass first)
-                  :confirm-error (vali/on-error :confirm first)}))
+;(defn signup []
+;  (layout/render "user/signup.html"
+;                 {:id-error      (vali/on-error :id first)
+;                  :pass-error    (vali/on-error :pass first)
+;                  :confirm-error (vali/on-error :confirm first)}))
 
 (defn account-activated []
   (layout/render "user/account-activated.html"))
@@ -48,6 +57,34 @@
 (defn account-created []
   (layout/render "user/account-created.html"))
 
+
+
+(defn profile []
+  (layout/render "user/profile.html"
+                 {:fields (user/get-profile-data (:username (friend/current-authentication)))})
+  )
+
+(defn handle-profile [params]
+  (user/update-user
+    (db/username-kw (friend/current-authentication))
+    (select-keys params db/add-profile-keywords))
+  (profile))
+
+
+(html/defsnippet login-enlive (str template-path "login.html") [:div#login]
+                 [error]
+                 [:div#error] (when error (fn [_] (error-snippet
+                                                    "Bad user / password combination or your account is not activated."))))
+
+(html/defsnippet signup-enlive (str template-path "signup.html") [:div#signup] [{:keys [email-error]}]
+                 [:div#email-error] (when email-error (fn [_] (error-snippet "Not a valid email address.")))
+                 ;[:div#error] (when error (fn [_] (error-snippet
+                 ;                                   "Bad user / password combination or your account is not activated.")))
+                 )
+
+(defn login [& [login_failed]] (util/resp (globals/base-template {:title "Login" :main  (login-enlive login_failed)})))
+(defn signup [] (util/resp (globals/base-template {:title "Signup" :main  (signup-enlive "bla")})))
+
 (defn handle-signup [email password confirm]
   (if (validRegister? email password confirm)
     (do
@@ -56,24 +93,16 @@
     (signup)
     ))
 
-(defn profile []
-  (layout/render "user/profile.html"
-                 {:fields (user/get-profile-data (:username (friend/current-authentication)))}))
-
-(defn handle-profile [params]
-  (user/update-user
-    (db/username-kw (friend/current-authentication))
-    (select-keys params db/add-profile-keywords))
-  (profile))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
            (GET "/user/signup" [] (signup))
+           ;(GET "/user/signup" [] (signup))
            (POST "/user/signup" [email password confirm] (handle-signup email password confirm))
            (GET "/user/accountcreated" [] (account-created))
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))
-           (GET "/user/admin" request (friend/authorize #{:admin} (admin)))
+           ;(GET "/user/admin" request (friend/authorize #{:admin} (admin)))
            (GET "/user/freetest" [] (friend/authorize #{:free} (account-created)))
            (GET "/user/profile" [] (friend/authenticated (profile)))
            (POST "/user/profile" request (friend/authenticated (handle-profile (:params request))))

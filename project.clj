@@ -12,7 +12,8 @@
                  [com.taoensso/timbre "3.0.0"]
                  [compojure "1.1.6"]
                  [selmer "0.5.9"]
-                 [lib-noir "0.8.1"]]
+                 [lib-noir "0.8.1"]
+                 [enlive "1.1.5"]]
   :plugins [[lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
   :deploy-repositories [["clojars-self" {:url "https://clojars.org/repo"
