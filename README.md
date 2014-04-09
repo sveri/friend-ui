@@ -4,8 +4,9 @@ This project is not used in a productive environment yet, so try it on your own 
 # friendui
 
 A Clojure library designed to wrap cemericks friend ([_https://github.com/cemerick/friend_]) library.
-It provideh templates for login / signup with email activation.
-As backend it uses datomic and enlive as templating library.
+It provides templates for login / signup with email activation.
+As backend it uses datomic (v0.9.4556) and enlive (v1.1.5) as templating library. 
+Bootstrap (> 3.0) is required too if you want it to look nice.
 
 ## "Installation"
 
