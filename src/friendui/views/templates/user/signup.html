@@ -8,12 +8,14 @@
 
 <div id="signup" class="container-fluid block-center">
     <div class="row">
-        <div class="col-md-3" />
 
-        <h3>Please create your account</h3>
 
         <form action="/user/signup" method="POST">
+
+            <div class="col-md-3" />
+
             <div class="form-group col-md-6">
+                <h3>Please create your account</h3>
                 <label for="email">Email</label>
 
                 <div id="email-error"></div>
@@ -22,24 +24,23 @@
                     <input class="form-control" id="email" name="email" tabindex="1" type="text"/>
                 </p>
                 <label for="password">Password</label>
-                {% if pass-error %}
-                <div class="alert alert-danger">{{pass-error}}</div>
-                {% endif %}
+
+                <div id="pass-error"></div>
                 <p>
                     <input class="form-control" id="password" name="password" tabindex="2" type="password"/>
                 </p>
                 <label for="confirm">Confirm Password</label>
-                {% if confirm-error %}
-                <div class="alert alert-danger">{{confirm-error}}</div>
-                {% endif %}
+
+                <div id="confirm-error"></div>
                 <p>
                     <input class="form-control" id="confirm" name="confirm" tabindex="3" type="password"/>
                 </p>
                 <input class="btn" tabindex="4" type="submit" value="Create Account">
             </div>
+
+            <div class="col-md-3" />
         </form>
 
-        <div class="col-md-3" />
 
     </div>
 </div>

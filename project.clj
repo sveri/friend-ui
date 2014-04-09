@@ -1,4 +1,4 @@
-(defproject de.sveri/friendui "0.1.2"
+(defproject de.sveri/friendui "0.2.0"
   :description "A frontend for friend library using selmer and storing data in datomic"
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"
@@ -11,7 +11,6 @@
                  [clojurewerkz/mailer "1.0.0"]
                  [com.taoensso/timbre "3.0.0"]
                  [compojure "1.1.6"]
-                 [selmer "0.5.9"]
                  [lib-noir "0.8.1"]
                  [enlive "1.1.5"]]
   :plugins [[lein-midje "3.1.1"]]
