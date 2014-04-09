@@ -13,7 +13,7 @@ Friendui is available in Clojars. Add this `:dependency` to your Leiningen
 `project.clj`:
 
 ```clojure
-[com.cemerick/friendui "0.2.0"]
+[de.sveri/friendui "0.2.0"]
 ```
 
 Or, add this to your Maven project's `pom.xml`:
@@ -74,7 +74,7 @@ This should get you up and running.
 (GET "/user/accountcreated")
 (GET "/user/activate/:id")
 (GET "/user/accountactivated")
-(friend/logout (ANY "/user/logout")
+(ANY "/user/logout")
 ```
 
 ## License
