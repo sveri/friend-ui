@@ -94,7 +94,7 @@
 
 (defn update-loggedin-user [data] (update-user (get-logged-in-username) data))
 
-(defn is-logged-in [] (not friend/anonymous?))
+(defn is-logged-in [] (if (get-logged-in-username) true false))
 
 
 (def friend-settings

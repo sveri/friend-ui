@@ -14,7 +14,7 @@ Friendui is available in Clojars. Add this `:dependency` to your Leiningen
 `project.clj`:
 
 ```clojure
-[de.sveri/friendui "0.2.1"]
+[de.sveri/friendui "0.2.2"]
 ```
 
 Or, add this to your Maven project's `pom.xml`:
@@ -28,7 +28,7 @@ Or, add this to your Maven project's `pom.xml`:
 <dependency>
   <groupId>de.sveri</groupId>
   <artifactId>friendui</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 </dependency>
 ```
 
