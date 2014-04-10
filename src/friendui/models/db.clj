@@ -1,27 +1,18 @@
 (ns friendui.models.db
   (:use [datomic.api :only [q db] :as d])
-  (:require [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+  (:require [friendui.globals :as globals]))
 
 
-(defn from-edn [fname]
-  "reads an edn file from classpath"
-  (with-open [rdr (-> (io/resource fname)
-                      io/reader
-                      java.io.PushbackReader.)]
-    (edn/read rdr)))
+(def uri-datomic (:datomic-uri globals/friendui-config))
+(def partition-id (:partition-id globals/friendui-config))
 
-(def db-config (from-edn "friendui-config.edn"))
-(def uri-datomic (:datomic-uri db-config))
-(def partition-id (:partition-id db-config))
-
-(def username-kw (:username-kw db-config))
-(def pw-kw (:pw-kw db-config))
-(def activated-kw (:activated-kw db-config))
-(def role-kw (:role-kw db-config))
-(def hostname (:hostname db-config))
-(def mail-from (:mail-from db-config))
-(def add-profile-fields (:additional-profile-fields db-config))
+(def username-kw (:username-kw globals/friendui-config))
+(def pw-kw (:pw-kw globals/friendui-config))
+(def activated-kw (:activated-kw globals/friendui-config))
+(def role-kw (:role-kw globals/friendui-config))
+(def hostname (:hostname globals/friendui-config))
+(def mail-from (:mail-from globals/friendui-config))
+(def add-profile-fields (:additional-profile-fields globals/friendui-config))
 (def add-profile-keywords (map #(:id %) add-profile-fields))
 
 (def all-namespaced-profile-keywords

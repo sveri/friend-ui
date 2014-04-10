@@ -14,7 +14,7 @@ Friendui is available in Clojars. Add this `:dependency` to your Leiningen
 `project.clj`:
 
 ```clojure
-[de.sveri/friendui "0.2.2"]
+[de.sveri/friendui "0.2.3"]
 ```
 
 Or, add this to your Maven project's `pom.xml`:
@@ -28,7 +28,7 @@ Or, add this to your Maven project's `pom.xml`:
 <dependency>
   <groupId>de.sveri</groupId>
   <artifactId>friendui</artifactId>
-  <version>0.2.2</version>
+  <version>0.2.3</version>
 </dependency>
 ```
 
@@ -49,6 +49,8 @@ It could look like this:
   :role-kw :user/role
   :hostname "localhost.de" ;used for generation of activation link
   :mail-from "from@from" ;used as from mail address
+  :base-template-content-key :main ; the key where the base template expects the page content
+  :base-template-title-key :title ; the key where the base template expects the page title
   }
 ```
 

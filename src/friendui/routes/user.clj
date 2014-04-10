@@ -13,6 +13,9 @@
 
 (def template-path "friendui/views/templates/user/")
 
+(def content-key (:base-template-content-key globals/friendui-config))
+(def title-key (:base-template-title-key globals/friendui-config))
+
 (html/defsnippet error-snippet (str template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
 
@@ -52,10 +55,10 @@
                  [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
                  [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error))))
 
-(defn login [& [login_failed]] (util/resp (globals/base-template {:title "Login" :main  (login-enlive login_failed)})))
-(defn signup [& errors] (util/resp (globals/base-template {:title "Signup" :main  (signup-enlive errors)})))
-(defn account-created [] (util/resp (globals/base-template {:title "Account Created" :main  (account-created-snippet)})))
-(defn account-activated [] (util/resp (globals/base-template {:title "Account Created" :main  (account-activated-snippet)})))
+(defn login [& [login_failed]] (util/resp (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
+(defn signup [& errors] (util/resp (globals/base-template {title-key "Signup" content-key  (signup-enlive errors)})))
+(defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key  (account-created-snippet)})))
+(defn account-activated [] (util/resp (globals/base-template {title-key "Account Created" content-key  (account-activated-snippet)})))
 
 (defn handle-signup [email password confirm]
   (if (validRegister? email password confirm)
