@@ -1,15 +1,46 @@
 [
+  ;; cljs.releases
   {:db/id #db/id [:db.part/db],
-          :db/ident :friendui
+          :db/ident :lweb
           :db.install/_partition :db.part/db
-          :db/doc "The partition of the database for releases"}
+          :db/doc "The partition of the database for cljs.releases"}
   {:db/id #db/id [:db.part/db]
-          :db/ident :friendui/id
+          :db/ident :lweb/id
           :db/valueType :db.type/uuid
           :db/cardinality :db.cardinality/one
           :db/unique :db.unique/identity
           :db.install/_attribute :db.part/db
           :db/doc "A unique identifier for any element"}
+
+  {:db/id #db/id [:db.part/db]
+          :db/ident :release/name
+          :db/valueType :db.type/string
+          :db/cardinality :db.cardinality/one
+          :db/index true
+          :db.install/_attribute :db.part/db}
+  {:db/id #db/id [:db.part/db]
+          :db/ident :release/epic
+          :db/valueType :db.type/ref
+          :db/cardinality :db.cardinality/many
+          :db.install/_attribute :db.part/db}
+  {:db/id #db/id [:db.part/db]
+          :db/ident :epic/key
+          :db/valueType :db.type/string
+          :db/cardinality :db.cardinality/one
+          :db/unique :db.unique/identity
+          :db/index true
+          :db.install/_attribute :db.part/db}
+  {:db/id #db/id [:db.part/db]
+          :db/ident :release/startDate
+          :db/valueType :db.type/instant
+          :db/cardinality :db.cardinality/one
+          :db.install/_attribute :db.part/db}
+  {:db/id #db/id [:db.part/db]
+          :db/ident :release/endDate
+          :db/valueType :db.type/instant
+          :db/cardinality :db.cardinality/one
+          :db.install/_attribute :db.part/db}
+
   ;; users
   {:db/id #db/id [:db.part/db]
           :db/ident :user/email
@@ -54,21 +85,9 @@
           :db/cardinality :db.cardinality/one
           :db.install/_attribute :db.part/db}
   {:db/id #db/id [:db.part/db]
-          :db/ident :user/jirausername
+          :db/ident :user/jirapasswordkey
           :db/index false
-          :db/valueType :db.type/string
-          :db/cardinality :db.cardinality/one
-          :db.install/_attribute :db.part/db}
-  {:db/id #db/id [:db.part/db]
-          :db/ident :user/jirapassword
-          :db/index false
-          :db/valueType :db.type/string
-          :db/cardinality :db.cardinality/one
-          :db.install/_attribute :db.part/db}
-  {:db/id #db/id [:db.part/db]
-          :db/ident :user/jiraurl
-          :db/index false
-          :db/valueType :db.type/string
+          :db/valueType :db.type/uuid
           :db/cardinality :db.cardinality/one
           :db.install/_attribute :db.part/db}
   ]
