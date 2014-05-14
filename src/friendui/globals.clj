@@ -2,6 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 
+(def template-path "friendui/views/templates/user/")
+
 (def base-template nil)
 
 (def friendui-config-name "friendui-config.edn")

@@ -96,6 +96,13 @@
 
 (defn is-logged-in [] (if (get-logged-in-username) true false))
 
+(defn get-all-users []
+  "Returns a list of user maps with all data available in database, without the password."
+  (map #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw)))
+
+(defn get-user-role [username] (first (:user/role (get-user-by-username username))))
+
+(defn get-loggedin-user-role [] (get-user-role (get-logged-in-username)))
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
@@ -103,3 +110,6 @@
    :login-uri                 "/user/login"
    :unauthorized-redirect-uri "/user/login"
    :default-landing-uri       "/"})
+
+
+;(derive ::admin ::free)

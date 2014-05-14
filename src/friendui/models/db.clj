@@ -12,13 +12,12 @@
 (def role-kw (:role-kw globals/friendui-config))
 (def hostname (:hostname globals/friendui-config))
 (def mail-from (:mail-from globals/friendui-config))
+(def available-roles (:available-roles globals/friendui-config))
 (def add-profile-fields (:additional-profile-fields globals/friendui-config))
 (def add-profile-keywords (map #(:id %) add-profile-fields))
 
 (def all-namespaced-profile-keywords
-  (do
-    (conj
-      (conj add-profile-keywords activated-kw) username-kw)))
+  (conj (conj add-profile-keywords activated-kw) username-kw))
 
 (defn conn-datomic [] (d/connect uri-datomic))
 
