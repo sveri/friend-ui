@@ -1,9 +1,9 @@
 (ns friendui.models.usertest
   (:require [datomic.api :as d]
             [midje.sweet :refer :all]
-            [friendui.models.user :as user]
-            [friendui.models.db :refer :all]
-            [friendui.service.user :refer :all]
+            [de.sveri.friendui.models.user :as user]
+            [de.sveri.friendui.models.db :refer :all]
+            [de.sveri.friendui.service.user :refer :all]
             [cemerick.friend.credentials :as creds]
             [clojure.set :as set]
             ))

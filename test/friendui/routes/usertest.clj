@@ -1,6 +1,6 @@
 (ns friendui.routes.usertest
   (:require [midje.sweet :refer :all]
-            [friendui.routes.user :as userroute]
+            [de.sveri.friendui.routes.user :as userroute]
             [noir.util.test :as noir-test]))
 
 ;(fact "register validation should ret false for to short password"

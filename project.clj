@@ -26,7 +26,7 @@
                                  :output-dir    "resources/public/js/user/out"
                                  :optimizations :none
                                  :source-map    "resources/public/js/user/all.js.map"}}]}
-
+  :source-paths ["src/clj"]
   :plugins [[lein-cljsbuild "1.0.2"]
             [lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
