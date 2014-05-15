@@ -102,7 +102,7 @@
 
 (defn get-user-role [username] (first (:user/role (get-user-by-username username))))
 
-(defn get-loggedin-user-role [] (get-user-role (get-logged-in-username)))
+(defn get-logged-in-user-role [] (get-user-role (get-logged-in-username)))
 
 (def friend-settings
   {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
