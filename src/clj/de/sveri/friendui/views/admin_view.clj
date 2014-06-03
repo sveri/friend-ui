@@ -15,6 +15,7 @@
                                                        (html/content (name option))
                                                        (if selected (html/set-attr :selected selected) identity)))
 
+
 (html/defsnippet admin-user-table-content (str globals/template-path "admin.html") [(html/attr= :field "table-entry")]
                  [user]
                  [(html/attr= :field "username-td")] (html/content (db/username-kw user))

@@ -17,6 +17,7 @@
                  [kioo "0.4.0"]
                  [om "0.6.1"]
                  [om-sync "0.1.1"]
+                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
                  [org.clojure/clojurescript "0.0-2173"]]
   :cljsbuild {:builds
                [{:id           "dev"
