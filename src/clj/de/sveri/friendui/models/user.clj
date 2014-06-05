@@ -98,7 +98,7 @@
 
 (defn get-all-users []
   "Returns a list of user maps with all data available in database, without the password."
-  (map #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw)))
+   (mapv #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw)))
 
 (defn get-user-role [username] (first (:user/role (get-user-by-username username))))
 

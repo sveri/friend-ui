@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 
-(def template-path "de/sveri/friendui/views/templates/user/")
+(def template-path "templates/de/sveri/friendui/user/")
 
 (def base-template nil)
 

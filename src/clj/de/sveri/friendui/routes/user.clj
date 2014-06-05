@@ -10,12 +10,13 @@
             [noir.validation :as vali]
             [net.cgrand.enlive-html :as html]
             [de.sveri.friendui.routes.util :as util]
-            [de.sveri.friendui.globals :as globals]))
-
+            [de.sveri.friendui.globals :as globals]
+            [noir.response :as resp]))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))
 (def title-key (:base-template-title-key globals/friendui-config))
+
 
 (html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
@@ -71,8 +72,13 @@
           confirm-error (vali/on-error :confirm first)]
       (signup :email-error email-error :pass-error pass-error :confirm-error confirm-error))))
 
+(html/defsnippet admin-user-view-snippet (str globals/template-path "admin.html") [:#admin] [])
+
 (defn admin-view []
-  (util/resp (globals/base-template {title-key "Administration" content-key (admin/admin-enlive)})))
+  (util/resp (globals/base-template {title-key "Administration" content-key (admin-user-view-snippet)})))
+
+(defn get-users-as-edn []
+  (resp/edn {:users {:url "/user/user" :coll (user/get-all-users)}}))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
@@ -82,6 +88,7 @@
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))
            (GET "/user/admin" [] (friend/authorize #{:user/admin} (admin-view)))
+           (GET "/user/admin/users" [] (friend/authorize #{:user/admin} (get-users-as-edn)))
            (friend/logout (ANY "/user/logout" [] (redirect "/"))))
 
 ;took out profile capabilities for now
