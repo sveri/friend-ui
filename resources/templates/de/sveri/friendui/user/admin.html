@@ -4,28 +4,53 @@
     <meta charset="UTF-8">
     <title></title>
 </head>
+
 <body>
 
 <div id="admin">
-    <div id="sub">
-        <div id="subsub">
-            <div id="subsubsub">
 
-            </div>
+    <style>
+        DIV.table {
+            display:table;
+        }
+        FORM.tr, DIV.tr {
+            display:table-row;
+        }
+        SPAN.td {
+            padding: 10px;
+            display:table-cell;
+        }
+    </style>
+
+    <div class="table" field="table">
+        <div class="tr" field="table-header-row">
+            <span class="td" field="header-entry">Username</span>
         </div>
+
+        <form field="user-row" class="tr" method="post" action="/user/update">
+            <input type="hidden" field="username-hidden" name="username" />
+            <span field="username" class="td"></span>
+            <span field="role" class="td">
+                <select field="role-select" name="role">
+                    <option field="role_option"></option>
+                </select>
+            </span>
+            <span field="active" class="td"><input type="checkbox" name="active" /></span>
+            <span field="submit" class="td"><input type="submit" value="Update User" class="btn btn-primary"/></span>
+        </form>
+
+        <form class="tr" method="post" action="/user/add">
+            <span class="td"><input type="email" name="username" /></span>
+            <span class="td">
+                <select name="role">
+                    <option>admin</option>
+                    <option>free</option>
+                </select>
+            </span>
+            <span class="td"><input type="checkbox" name="active" /></span>
+            <span class="td"><input type="submit" value="Add new User" class="btn btn-primary"/></span>
+        </form>
     </div>
-
-
-
-
-
-    <!--<script type="text/javascript" src="/js/user/bootstrap.min.js"></script>-->
-    <script type="text/javascript" src="/js/friendui/react-0.9.0.js"></script>
-
-    <script type="text/javascript" src="/js/friendui/out/goog/base.js"></script>
-    <script type="text/javascript" src="/js/friendui/friendui.js"></script>
-    <script type="text/javascript"> goog.require("de.sveri.friendui.admin"); </script>
-
 
 </div>
 

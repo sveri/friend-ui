@@ -4,7 +4,8 @@
             [de.sveri.friendui.models.db :refer :all]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
-            [de.sveri.friendui.service.user :as userservice]))
+            [de.sveri.friendui.service.user :as userservice]
+            [de.sveri.friendui.models.db :as db]))
 
 
 (def activationid-kw :user/activationid)
@@ -27,8 +28,7 @@
                                     role-kw      (keyword role)
                                     activationid-kw activationid
                                     }])
-      (userservice/send-activation-email email activationid)
-      )))
+      (userservice/send-activation-email email activationid))))
 
 (defn get-user-password-role-map []
   (let [user-ids (find-all-from-column username-kw)]
@@ -82,7 +82,7 @@
         {:username username :roles (get-roles db-id) :password (pw-kw db-id)}))))
 
 (defn update-user [username data]
-  @(d/transact (conn-datomic) [(merge {:db/id [:user/email username]} data)]))
+  @(d/transact (conn-datomic) [(merge {:db/id [db/username-kw username]} data)]))
 
 (defn get-profile-data [username]
   "returns all data that is needed for the profile page"

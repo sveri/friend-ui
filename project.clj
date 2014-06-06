@@ -12,25 +12,9 @@
                  [com.taoensso/timbre "3.2.1"]
                  [compojure "1.1.8"]
                  [lib-noir "0.8.3"]
-                 [enlive "1.1.5"]
-                 [org.clojure/clojurescript "0.0-2227"]
-                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
-                 [fogus/ring-edn "0.2.0"]
-                 [om "0.6.4"]
-                 [om-sync "0.1.1"]
-                 ;[kioo "0.4.0"]
-                 ]
-  :cljsbuild {:builds
-               [{:id           "dev"
-                 :source-paths ["src/cljs"]
-                 :compiler     {
-                                 :output-to     "resources/public/js/friendui/friendui.js"
-                                 :output-dir    "resources/public/js/friendui/out"
-                                 :optimizations :none
-                                 :source-map    "resources/public/js/friendui/friendui.js.map"}}]}
+                 [enlive "1.1.5"]]
   :source-paths ["src/clj"]
-  :plugins [[lein-cljsbuild "1.0.3"]
-            [lein-midje "3.1.1"]]
+  :plugins [[lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
   :deploy-repositories [["clojars-self" {:url           "https://clojars.org/repo"
                                          :sign-releases false}]]

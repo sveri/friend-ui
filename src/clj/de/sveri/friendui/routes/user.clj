@@ -11,7 +11,8 @@
             [net.cgrand.enlive-html :as html]
             [de.sveri.friendui.routes.util :as util]
             [de.sveri.friendui.globals :as globals]
-            [noir.response :as resp]))
+            [noir.response :as resp]
+            [datomic.api :as d]))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))
@@ -72,13 +73,15 @@
           confirm-error (vali/on-error :confirm first)]
       (signup :email-error email-error :pass-error pass-error :confirm-error confirm-error))))
 
-(html/defsnippet admin-user-view-snippet (str globals/template-path "admin.html") [:#admin] [])
-
 (defn admin-view []
-  (util/resp (globals/base-template {title-key "Administration" content-key (admin-user-view-snippet)})))
+  (util/resp (globals/base-template {title-key "User Administration" content-key (admin/admin-enlive (user/get-all-users))})))
 
-(defn get-users-as-edn []
-  (resp/edn {:users {:url "/user/user" :coll (user/get-all-users)}}))
+(defn update-user [username role active]
+  (user/update-user username {db/role-kw #{(keyword "user" role)} db/activated-kw (if active true false)})
+  (resp/redirect "/user/admin"))
+
+(defn add-user [username role active]
+  (resp/redirect "/user/admin"))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
@@ -88,7 +91,8 @@
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))
            (GET "/user/admin" [] (friend/authorize #{:user/admin} (admin-view)))
-           (GET "/user/admin/users" [] (friend/authorize #{:user/admin} (get-users-as-edn)))
+           (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
+           (POST "/user/add" [username role active] (friend/authorize #{:user/admin} (add-user username role active)))
            (friend/logout (ANY "/user/logout" [] (redirect "/"))))
 
 ;took out profile capabilities for now
