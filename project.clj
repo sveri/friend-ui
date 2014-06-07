@@ -12,10 +12,10 @@
                  [com.taoensso/timbre "3.2.1"]
                  [compojure "1.1.8"]
                  [lib-noir "0.8.3"]
-                 [enlive "1.1.5"]]
+                 [enlive "1.1.5"]
+                 [de.sveri/clojure-commons "0.1.0-Snapshot"]]
   :source-paths ["src/clj"]
   :plugins [[lein-midje "3.1.1"]]
   :test-paths ["test" "test/resources"]
   :deploy-repositories [["clojars-self" {:url           "https://clojars.org/repo"
-                                         :sign-releases false}]]
-  )
+                                         :sign-releases false}]])

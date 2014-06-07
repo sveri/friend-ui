@@ -12,12 +12,20 @@
             [de.sveri.friendui.routes.util :as util]
             [de.sveri.friendui.globals :as globals]
             [noir.response :as resp]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [de.sveri.clojure.commons.lists.util :as list-utils]
+            ))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))
 (def title-key (:base-template-title-key globals/friendui-config))
 
+(defn- map-checkbox-with-bool [val]
+  "returns true if val is not nil"
+  (if val true false))
+
+(defn create-keywordized-role-set [role]
+  #{(keyword "user" role)})
 
 (html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
@@ -63,25 +71,40 @@
 (defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key  (account-created-snippet)})))
 (defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key  (account-activated-snippet)})))
 
-(defn handle-signup [email password confirm]
+(defn handle-signup
+  ([email password confirm]
+   (handle-signup email password confirm account-created signup))
+  ([email password confirm succ-page error-page]
   (if (validRegister? email password confirm)
     (do
       (user/create-user email password "free")
-      (account-created))
+      (succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)
           confirm-error (vali/on-error :confirm first)]
-      (signup :email-error email-error :pass-error pass-error :confirm-error confirm-error))))
+      (error-page :email-error email-error :pass-error pass-error :confirm-error confirm-error)))))
 
-(defn admin-view []
-  (util/resp (globals/base-template {title-key "User Administration" content-key (admin/admin-enlive (user/get-all-users))})))
+(defn admin-view [{:keys [email-error pass-error confirm-error]} & [username-filter]]
+  (println username-filter " - " errors)
+  (util/resp (globals/base-template
+               {title-key "User Administration"
+                content-key (admin/admin-enlive
+                              (let [users (user/get-all-users)]
+                                (if username-filter
+                                  (list-utils/filter-list users username-filter db/username-kw )
+                                  users)))})))
+
 
 (defn update-user [username role active]
-  (user/update-user username {db/role-kw #{(keyword "user" role)} db/activated-kw (if active true false)})
+  (user/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
-(defn add-user [username role active]
-  (resp/redirect "/user/admin"))
+;(defn add-user [email password confirm]
+;  (user/create-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
+;  (resp/redirect "/user/admin"))
+;(defn add-user [username role active]
+;  (user/create-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
+;  (resp/redirect "/user/admin"))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
@@ -90,9 +113,9 @@
            (GET "/user/accountcreated" [] (account-created))
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))
-           (GET "/user/admin" [] (friend/authorize #{:user/admin} (admin-view)))
+           (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view filter)))
            (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
-           (POST "/user/add" [username role active] (friend/authorize #{:user/admin} (add-user username role active)))
+           (POST "/user/add" [email password confirm] (friend/authorize #{:user/admin} (handle-signup email password confirm admin-view admin-view)))
            (friend/logout (ANY "/user/logout" [] (redirect "/"))))
 
 ;took out profile capabilities for now

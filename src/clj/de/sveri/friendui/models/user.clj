@@ -15,20 +15,27 @@
 
 (defn get-logged-in-username [] (:username (friend/current-authentication)))
 
+(defn- create-user-with-map [data-map]
+  (let [temp_id (d/tempid partition-id)]
+    @(d/transact (conn-datomic) [(merge {:db/id temp_id} data-map)])))
 
-(defn create-user [email password role]
+(defn create-user
+  ([username data-map]
+  "Creates a new user with the given constraints if the username does not exist already."
+  (if (not (username-exists username))
+    (create-user-with-map (merge {db/username-kw username} data-map))))
+  ([email password role]
+  "Creates a new user which is inactive.
+  Will send an activation email to the given email adress with a link that the user can use to activate it's account."
   (if (not (username-exists email))
-    (let [temp_id (d/tempid partition-id)
-          pw_crypted (creds/hash-bcrypt password)
+    (let [pw_crypted (creds/hash-bcrypt password)
           activationid (userservice/generate-activation-id)]
-      @(d/transact (conn-datomic) [{:db/id       temp_id
-                                    username-kw  email
-                                    pw-kw        pw_crypted
-                                    activated-kw false
-                                    role-kw      (keyword role)
-                                    activationid-kw activationid
-                                    }])
-      (userservice/send-activation-email email activationid))))
+      (create-user-with-map {username-kw     email
+                             pw-kw           pw_crypted
+                             activated-kw    false
+                             role-kw         (keyword role)
+                             activationid-kw activationid})
+      (userservice/send-activation-email email activationid)))))
 
 (defn get-user-password-role-map []
   (let [user-ids (find-all-from-column username-kw)]
@@ -70,7 +77,7 @@
 (defn get-user-for-activation-id [id]
   (let [user-entity (get-entity-from-double-vec (find-by-column-and-search-string activationid-kw id))]
     {:username (username-kw user-entity)
-     :roles #{(role-kw user-entity)}}))
+     :roles    #{(role-kw user-entity)}}))
 
 (defn is-user-activated [username]
   (if (= (activated-kw (get-user-by-username username)) true) true false))
@@ -98,7 +105,7 @@
 
 (defn get-all-users []
   "Returns a list of user maps with all data available in database, without the password."
-   (mapv #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw)))
+  (sort-by db/username-kw (mapv #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw))))
 
 (defn get-user-role [username] (first (:user/role (get-user-by-username username))))
 

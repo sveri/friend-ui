@@ -21,13 +21,23 @@
                  [(html/attr= :field "role-select")]
                     (html/content (map #(role-option % (when (= (name (db/role-kw user)) (name %)) true))
                                        db/available-roles))
-                 [(html/attr= :field "active") :input] (if (db/activated-kw user) (html/set-attr :checked true) identity))
+                 [(html/attr= :field "active") :input] (if (db/activated-kw user) (html/set-attr :checked true) identity)
+                 [(html/attr= :field "change_password")] (html/set-attr :href (str "/user/changepassword/" (db/username-kw user))))
 
 (html/defsnippet admin-user-table-header (str globals/template-path "admin.html") [(html/attr= :field "header-entry")]
                  [{:keys [header]}]
                  [(html/attr= :field "header-entry")] (html/content header))
 
+(html/defsnippet add-user (str globals/template-path "signup.html") [:form]
+                 []
+                 [:form] (html/do-> (html/set-attr :class "form-inline")
+                                    (html/set-attr :action "/user/add"))
+                 [:h3] nil
+                 [:.btn] (html/do-> (html/set-attr :value "Add a new user")
+                                    (html/set-attr :style "margin-top: 15px;")))
+
 (html/defsnippet admin-enlive (str globals/template-path "admin.html") [:#admin]
                  [users]
+                 [:#add-user-div] (html/content (add-user))
                  [(html/attr= :field "table-header-row")] (html/content (map #(admin-user-table-header %) user-admin-table-header))
                  [(html/attr= :field "user-row")] (html/content (map #(admin-user-table-content %) users)))
