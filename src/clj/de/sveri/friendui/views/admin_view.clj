@@ -8,6 +8,10 @@
                               {:header "Active"}
                               {:header ""}])
 
+
+(html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
+                 [:#error] (html/content message))
+
 (html/defsnippet role-option (str globals/template-path "admin.html") [(html/attr= :field "role_option")]
                  [option selected]
                  [(html/attr= :field "role_option")] (html/do->
@@ -29,7 +33,11 @@
                  [(html/attr= :field "header-entry")] (html/content header))
 
 (html/defsnippet add-user (str globals/template-path "signup.html") [:form]
-                 []
+                 ;[]
+                 [{:keys [email-error pass-error confirm-error]}]
+                 [:div#email-error] (when email-error (fn [_] (error-snippet email-error)))
+                 [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
+                 [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
                  [:form] (html/do-> (html/set-attr :class "form-inline")
                                     (html/set-attr :action "/user/add"))
                  [:h3] nil
@@ -37,7 +45,7 @@
                                     (html/set-attr :style "margin-top: 15px;")))
 
 (html/defsnippet admin-enlive (str globals/template-path "admin.html") [:#admin]
-                 [users]
-                 [:#add-user-div] (html/content (add-user))
+                 [users & [add-user-errors]]
+                 [:#add-user-div] (html/content (add-user add-user-errors))
                  [(html/attr= :field "table-header-row")] (html/content (map #(admin-user-table-header %) user-admin-table-header))
                  [(html/attr= :field "user-row")] (html/content (map #(admin-user-table-content %) users)))

@@ -1,4 +1,4 @@
-(defproject de.sveri/friendui "0.2.3"
+(defproject de.sveri/friendui "0.2.4"
   :description "A frontend for friend library using selmer and storing data in datomic"
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"

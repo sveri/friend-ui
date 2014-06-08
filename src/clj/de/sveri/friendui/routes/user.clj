@@ -67,44 +67,39 @@
                  [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error))))
 
 (defn login [& [login_failed]] (util/resp (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
-(defn signup [& errors] (util/resp (globals/base-template {title-key "Signup" content-key  (signup-enlive errors)})))
-(defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key  (account-created-snippet)})))
-(defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key  (account-activated-snippet)})))
+(defn signup [& [errors]] (util/resp (globals/base-template {title-key "Signup" content-key (signup-enlive errors)})))
+(defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
+(defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
 
 (defn handle-signup
   ([email password confirm]
-   (handle-signup email password confirm account-created signup))
+   (handle-signup email password confirm "/user/accountcreated" signup))
   ([email password confirm succ-page error-page]
-  (if (validRegister? email password confirm)
-    (do
-      (user/create-user email password "free")
-      (succ-page))
-    (let [email-error (vali/on-error :id first)
-          pass-error (vali/on-error :pass first)
-          confirm-error (vali/on-error :confirm first)]
-      (error-page :email-error email-error :pass-error pass-error :confirm-error confirm-error)))))
+   (if (validRegister? email password confirm)
+     (do
+       (user/create-user email password "free")
+       (resp/redirect succ-page))
+     (let [email-error (vali/on-error :id first)
+           pass-error (vali/on-error :pass first)
+           confirm-error (vali/on-error :confirm first)]
+       (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error})))))
 
-(defn admin-view [{:keys [email-error pass-error confirm-error]} & [username-filter]]
-  (println username-filter " - " errors)
+
+(defn admin-view [& [data]]
   (util/resp (globals/base-template
-               {title-key "User Administration"
+               {title-key   "User Administration"
                 content-key (admin/admin-enlive
-                              (let [users (user/get-all-users)]
+                              (let [users (user/get-all-users)
+                                    username-filter (:username-filter data)]
                                 (if username-filter
-                                  (list-utils/filter-list users username-filter db/username-kw )
-                                  users)))})))
+                                  (list-utils/filter-list users username-filter db/username-kw)
+                                  users))
+                              data)})))
 
 
 (defn update-user [username role active]
   (user/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
-
-;(defn add-user [email password confirm]
-;  (user/create-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
-;  (resp/redirect "/user/admin"))
-;(defn add-user [username role active]
-;  (user/create-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
-;  (resp/redirect "/user/admin"))
 
 (defroutes user-routes
            (GET "/user/login" [login_failed] (login login_failed))
@@ -113,9 +108,9 @@
            (GET "/user/accountcreated" [] (account-created))
            (GET "/user/activate/:id" [id] (activate-account id))
            (GET "/user/accountactivated" [] (account-activated))
-           (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view filter)))
+           (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
            (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
-           (POST "/user/add" [email password confirm] (friend/authorize #{:user/admin} (handle-signup email password confirm admin-view admin-view)))
+           (POST "/user/add" [email password confirm] (friend/authorize #{:user/admin} (handle-signup email password confirm "/user/admin" admin-view)))
            (friend/logout (ANY "/user/logout" [] (redirect "/"))))
 
 ;took out profile capabilities for now

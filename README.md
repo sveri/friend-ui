@@ -14,7 +14,7 @@ Friendui is available in Clojars. Add this `:dependency` to your Leiningen
 `project.clj`:
 
 ```clojure
-[de.sveri/friendui "0.2.3"]
+[de.sveri/friendui "0.2.4"]
 ```
 
 Or, add this to your Maven project's `pom.xml`:
@@ -28,7 +28,7 @@ Or, add this to your Maven project's `pom.xml`:
 <dependency>
   <groupId>de.sveri</groupId>
   <artifactId>friendui</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
 </dependency>
 ```
 
@@ -73,12 +73,21 @@ This should get you up and running.
 ```clojure
 (GET "/user/login") ;expects a "username" / "password" combination
 (GET "/user/signup")
-(POST "/user/signup")
+(POST "/user/signup") ;expects email / password / confirm parameters
 (GET "/user/accountcreated")
 (GET "/user/activate/:id")
 (GET "/user/accountactivated")
+(GET "/user/admin" [filter])
+(POST "/user/update" [username role active])
+(POST "/user/add" [email password confirm])
 (ANY "/user/logout")
 ```
+
+## Version History
+**0.2.4** 
+Added Administrator interface for users. User roles and activation status can be updated by administrators.
+New Users can be added by administrators.
+A filter is available for the user list
 
 ## License
 
