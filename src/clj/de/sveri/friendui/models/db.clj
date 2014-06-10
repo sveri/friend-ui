@@ -20,6 +20,7 @@
   (conj (conj add-profile-keywords activated-kw) username-kw))
 
 (defn conn-datomic [] (d/connect uri-datomic))
+;(defn conn-datomic [] (delay (d/connect uri-datomic)))
 
 (defn dbc [] (db (conn-datomic)))
 

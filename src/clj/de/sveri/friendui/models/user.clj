@@ -4,7 +4,6 @@
             [de.sveri.friendui.models.db :refer :all]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
-            [de.sveri.friendui.service.user :as userservice]
             [de.sveri.friendui.models.db :as db]))
 
 
@@ -20,22 +19,20 @@
     @(d/transact (conn-datomic) [(merge {:db/id temp_id} data-map)])))
 
 (defn create-user
+  "First form creates a new user with the given constraints if the username does not exist already.
+  Second form creates a new user which is inactive."
   ([username data-map]
-  "Creates a new user with the given constraints if the username does not exist already."
   (if (not (username-exists username))
     (create-user-with-map (merge {db/username-kw username} data-map))))
-  ([email password role]
-  "Creates a new user which is inactive.
-  Will send an activation email to the given email adress with a link that the user can use to activate it's account."
+  ([email password role & [activationid]]
   (if (not (username-exists email))
-    (let [pw_crypted (creds/hash-bcrypt password)
-          activationid (userservice/generate-activation-id)]
-      (create-user-with-map {username-kw     email
-                             pw-kw           pw_crypted
-                             activated-kw    false
-                             role-kw         (keyword role)
-                             activationid-kw activationid})
-      (userservice/send-activation-email email activationid)))))
+    (let [pw_crypted (creds/hash-bcrypt password)]
+      (create-user-with-map (merge
+                              {username-kw  email
+                              pw-kw        pw_crypted
+                              activated-kw false
+                              role-kw      (keyword role)}
+                              (when activationid {activationid-kw activationid})))))))
 
 (defn get-user-password-role-map []
   (let [user-ids (find-all-from-column username-kw)]
@@ -44,9 +41,10 @@
                [(username-kw user) (pw-kw user) (role-kw user)])
              ))))
 
-(defn- get-roles [db-id]
+(defn- get-roles
   "retrieves all roles a user belongs to and returns them as a set.
   Username should be an entity id"
+  [db-id]
   #{(role-kw db-id)})
 
 (defn get-user-by-username
@@ -91,8 +89,9 @@
 (defn update-user [username data]
   @(d/transact (conn-datomic) [(merge {:db/id [db/username-kw username]} data)]))
 
-(defn get-profile-data [username]
-  "returns all data that is needed for the profile page"
+(defn get-profile-data
+  "Returns all data that is needed for the profile page"
+  [username]
   (let [user (get-user-by-username username)]
     (for [field add-profile-fields]
       (let [id (:id-kw field)
@@ -103,8 +102,9 @@
 
 (defn is-logged-in [] (if (get-logged-in-username) true false))
 
-(defn get-all-users []
+(defn get-all-users
   "Returns a list of user maps with all data available in database, without the password."
+  []
   (sort-by db/username-kw (mapv #(dissoc (into {} (d/touch (get-entity-from-vec %))) pw-kw) (find-all-from-column username-kw))))
 
 (defn get-user-role [username] (first (:user/role (get-user-by-username username))))
@@ -117,6 +117,3 @@
    :login-uri                 "/user/login"
    :unauthorized-redirect-uri "/user/login"
    :default-landing-uri       "/"})
-
-
-;(derive ::admin ::free)

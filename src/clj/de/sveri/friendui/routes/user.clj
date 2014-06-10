@@ -1,5 +1,4 @@
 (ns de.sveri.friendui.routes.user
-  (:use compojure.core)
   (:require [de.sveri.friendui.views.layout :as layout]
             [ring.util.response :refer [redirect]]
             [cemerick.friend :as friend]
@@ -10,18 +9,20 @@
             [noir.validation :as vali]
             [net.cgrand.enlive-html :as html]
             [de.sveri.friendui.routes.util :as util]
+            [de.sveri.friendui.service.user :as userservice]
             [de.sveri.friendui.globals :as globals]
             [noir.response :as resp]
             [datomic.api :as d]
             [de.sveri.clojure.commons.lists.util :as list-utils]
-            ))
+            [compojure.core :as compojure :refer [GET POST ANY]]))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))
 (def title-key (:base-template-title-key globals/friendui-config))
 
-(defn- map-checkbox-with-bool [val]
-  "returns true if val is not nil"
+(defn- map-checkbox-with-bool
+  "Returns true if val is not nil"
+  [val]
   (if val true false))
 
 (defn create-keywordized-role-set [role]
@@ -71,20 +72,6 @@
 (defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
 (defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
 
-(defn handle-signup
-  ([email password confirm]
-   (handle-signup email password confirm "/user/accountcreated" signup))
-  ([email password confirm succ-page error-page]
-   (if (validRegister? email password confirm)
-     (do
-       (user/create-user email password "free")
-       (resp/redirect succ-page))
-     (let [email-error (vali/on-error :id first)
-           pass-error (vali/on-error :pass first)
-           confirm-error (vali/on-error :confirm first)]
-       (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error})))))
-
-
 (defn admin-view [& [data]]
   (util/resp (globals/base-template
                {title-key   "User Administration"
@@ -96,22 +83,42 @@
                                   users))
                               data)})))
 
+(defn add-user
+  "Creates a new user in the database. Acts for both the signup and the administrator form.
+  If send_email is not nil it will send an activation email to the given email adress with a link that the user can use
+  to activate it's account."
+  [email password confirm succ-page error-page & [send_email]]
+  (if (validRegister? email password confirm)
+    (do
+      (if send_email
+        (let [activationid (userservice/generate-activation-id)]
+          (do
+            (user/create-user email password "free" activationid)
+            (userservice/send-activation-email email activationid)))
+        (user/create-user email password "free"))
+      (resp/redirect succ-page))
+    (let [email-error (vali/on-error :id first)
+          pass-error (vali/on-error :pass first)
+          confirm-error (vali/on-error :confirm first)]
+      (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error}))))
 
 (defn update-user [username role active]
   (user/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
-(defroutes user-routes
-           (GET "/user/login" [login_failed] (login login_failed))
-           (GET "/user/signup" [] (signup))
-           (POST "/user/signup" [email password confirm] (handle-signup email password confirm))
-           (GET "/user/accountcreated" [] (account-created))
-           (GET "/user/activate/:id" [id] (activate-account id))
-           (GET "/user/accountactivated" [] (account-activated))
-           (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
-           (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
-           (POST "/user/add" [email password confirm] (friend/authorize #{:user/admin} (handle-signup email password confirm "/user/admin" admin-view)))
-           (friend/logout (ANY "/user/logout" [] (redirect "/"))))
+(compojure/defroutes user-routes
+                     (GET "/user/login" [login_failed] (login login_failed))
+                     (GET "/user/signup" [] (signup))
+                     (POST "/user/signup" [email password confirm]
+                           (add-user email password confirm "/user/accountcreated" signup true))
+                     (GET "/user/accountcreated" [] (account-created))
+                     (GET "/user/activate/:id" [id] (activate-account id))
+                     (GET "/user/accountactivated" [] (account-activated))
+                     (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
+                     (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
+                     (POST "/user/add" [email password confirm]
+                           (friend/authorize #{:user/admin} (add-user email password confirm "/user/admin" admin-view)))
+                     (friend/logout (ANY "/user/logout" [] (redirect "/"))))
 
 ;took out profile capabilities for now
 

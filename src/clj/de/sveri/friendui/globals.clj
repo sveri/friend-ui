@@ -8,8 +8,9 @@
 
 (def friendui-config-name "friendui-config.edn")
 
-(defn from-edn [fname]
+(defn from-edn
   "reads an edn file from classpath"
+  [fname]
   (with-open [rdr (-> (io/resource fname)
                       io/reader
                       java.io.PushbackReader.)]

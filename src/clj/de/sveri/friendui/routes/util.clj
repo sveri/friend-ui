@@ -1,9 +1,8 @@
 (ns de.sveri.friendui.routes.util
-  ;(:require [noir.io :as io])
-  (:use    [ring.util.response :as response]))
+  (:require [ring.util.response :as resp]))
 
 (defn render [t]
   (apply str t))
 
 (def resp
-  (comp response render))
+  (comp resp/response render))
