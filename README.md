@@ -1,4 +1,5 @@
 # Warning
+Build 0.2.4 is broken, don't use it. I am working on a fix.
 This project is not used in a productive environment yet, so try it on your own risk.
 
 # friendui
@@ -84,7 +85,7 @@ This should get you up and running.
 ```
 
 ## Version History
-**0.2.4** 
+**0.2.4** - Broken build - don't use it
 Added Administrator interface for users. User roles and activation status can be updated by administrators.
 New Users can be added by administrators.
 A filter is available for the user list
