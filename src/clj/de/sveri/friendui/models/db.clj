@@ -1,6 +1,7 @@
 (ns de.sveri.friendui.models.db
-  (:use [datomic.api :only [q db] :as d])
-  (:require [de.sveri.friendui.globals :as globals]))
+  ;(:use [datomic.api :only [q db] :as d])
+  (:require [de.sveri.friendui.globals :as globals]
+            [datomic.api :as d]))
 
 
 (def uri-datomic (:datomic-uri globals/friendui-config))
@@ -19,27 +20,36 @@
 (def all-namespaced-profile-keywords
   (conj (conj add-profile-keywords activated-kw) username-kw))
 
-(defn conn-datomic [] (d/connect uri-datomic))
+;(defn conn-datomic [] (d/connect uri-datomic))
 ;(defn conn-datomic [] (delay (d/connect uri-datomic)))
 
-(defn dbc [] (db (conn-datomic)))
+(def conn-datomic (delay (d/connect uri-datomic)))
 
-(defn find-by-column-and-search-string [column search]
-  (q '[:find ?c
+
+;(defn dbc [] (db (conn-datomic)))
+
+(defn get-new-conn [] (d/db @conn-datomic))
+
+(defn create-entity [data-map]
+  (let [temp_id (d/tempid partition-id)]
+    [(merge {:db/id temp_id} data-map)]))
+
+(defn find-by-column-and-search-string [db column search]
+  (d/q '[:find ?c
        :in $ ?column ?name
        :where [?c ?column ?name]]
-     (dbc)
+     db
      column
      search))
 
-(defn find-all-from-column [column]
-  (d/q '[:find ?c :in $ ?column :where [?c ?column]] (dbc) column))
+(defn find-all-from-column [db column]
+  (d/q '[:find ?c :in $ ?column :where [?c ?column]] db column))
 
-(defn get-entity-from-double-vec [id]
-  (d/entity (dbc) (ffirst id)))
+(defn get-entity-from-double-vec [db id]
+  (d/entity db (ffirst id)))
 
-(defn get-entity-from-vec [id]
-  (d/entity (dbc) (first id)))
+(defn get-entity-from-vec [db id]
+  (d/entity db (first id)))
 
 
 

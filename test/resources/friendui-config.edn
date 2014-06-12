@@ -1,5 +1,6 @@
 {
-  :datomic-uri "datomic:mem://localhost:4444/friendui"
+  :datomic-uri "datomic:mem://friendui"
+  ;:datomic-uri "datomic:mem://localhost:4444/friendui"
   :partition-id :friendui
   :username-kw :user/email
   :pw-kw :user/password
