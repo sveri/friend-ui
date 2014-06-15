@@ -45,7 +45,7 @@
   (not (vali/errors? :id :pass :confirm)))
 
 (defn activate-account [id]
-  (if (not (user/account-activated id))
+  (if (not (user/account-activated? id))
     (user/activate-account id))
   (friend/merge-authentication
     (redirect "/")
