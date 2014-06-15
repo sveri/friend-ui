@@ -52,9 +52,8 @@
 (defn get-user-by-username
   "retrieves the users important fields
   if pw param is set, it will give the password back too in map"
-  [username & pw]
-  (let [db-conn (db/get-new-conn)
-        db-id (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username))
+  [db-val username & pw]
+  (let [db-id (db/get-entity-from-double-vec db-val (db/find-by-column-and-search-string db-val db/username-kw username))
         user (assoc (select-keys db-id db/all-namespaced-profile-keywords) db/role-kw (get-roles db-id))]
     (if pw
       (merge user (into {} [[:password (db/pw-kw db-id)]]))
@@ -66,7 +65,8 @@
    (let [db-conn (db/get-new-conn)]
      (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username)))))
 
-(defn set-user-activated [username] @(d/transact db/conn-datomic [{:db/id [db/username-kw username], db/activated-kw true}]))
+(defn set-user-activated [db-conn username]
+  @(d/transact db-conn [{:db/id [db/username-kw username], db/activated-kw true}]))
 
 (defn account-activated [activationid]
   (let [db-conn (db/get-new-conn)
@@ -84,8 +84,8 @@
     {:username (db/username-kw user-entity)
      :roles    #{(db/role-kw user-entity)}}))
 
-(defn is-user-activated [username]
-  (if (= (db/activated-kw (get-user-by-username username)) true) true false))
+(defn is-user-activated [db-val username]
+  (if (= (db/activated-kw (get-user-by-username db-val username)) true) true false))
 
 (defn login-user [username]
   (if (is-user-activated username)

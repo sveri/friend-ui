@@ -21,13 +21,7 @@
 (def all-namespaced-profile-keywords
   (conj (conj add-profile-keywords activated-kw) username-kw))
 
-;(defn conn-datomic [] (d/connect uri-datomic))
-;(defn conn-datomic [] (delay (d/connect uri-datomic)))
-
 (def conn-datomic (delay (d/connect uri-datomic)))
-
-
-;(defn dbc [] (db (conn-datomic)))
 
 (defn get-new-conn [] (d/db @conn-datomic))
 
@@ -53,11 +47,11 @@
 (defn find-all-from-column [db column-query]
   (d/q column-query db))
 
-(defn get-entity-from-double-vec [db id]
-  (d/entity db (ffirst id)))
+(defn get-entity-from-double-vec [db vec]
+  (d/entity db (ffirst vec)))
 
-(defn get-entity-from-vec [db id]
-  (d/entity db (first id)))
+(defn get-entity-from-vec [db vec]
+  (d/entity db (first vec)))
 
 
 

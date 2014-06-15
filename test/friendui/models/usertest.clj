@@ -11,9 +11,11 @@
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [de.sveri.clojure.commons.tests.util :as commons]
+            [de.sveri.friendui.globals :as glob]
             ))
 
 (def gen-quantity 100)
+(def gen-quantity-db 10)
 
 (def default-role :free)
 
@@ -86,65 +88,47 @@
 ;        _ (:db-after (db/insert-entity conn-datomic (db/create-entity user)))]
 ;      (is (thrown? java.lang.AssertionError (user/insert-user conn-datomic email (db/create-entity user))))))
 
-(defspec insert-one-user-should-let-me-retrieve-that-one-user
-         gen-quantity
+;(defspec insert-one-user-should-let-me-retrieve-that-one-user
+;         gen-quantity-db
+;         (prop/for-all [email commons/email-gen pw gen/string]
+;                       (let [user (user/create-user-map email pw default-role)
+;                              db_temp (:db-after (d/with base-db (db/create-entity user)))
+;                              found-vec (db/find-all-from-column db_temp db/find-by-username-query)
+;                              found-entity (db/get-entity-from-double-vec db_temp found-vec)]
+;                         (and (= (db/username-kw found-entity) email)
+;                              (= (db/activated-kw found-entity) false)
+;                              (= (db/role-kw found-entity) default-role)
+;                              (= (count found-vec) 1)
+;                              ;(is (thrown? java.lang.AssertionError (user/insert-user conn-datomic email (db/create-entity user))))
+;                              (= (not-empty (db/pw-kw found-entity)))
+;                              (= (user/username-exists db_temp email))
+;                              (= (user/username-exists db_temp (str "foo" email)) false)))))
+;(defspec generate-correct-activation-links
+;         gen-quantity
+;         (prop/for-all [activationid (gen/not-empty gen/string-alpha-numeric)]
+;                       (= (user-service/generate-activation-link activationid)
+;                          (str db/hostname "user/activate/" activationid))))
+;
+;(defspec activate-user
+;         gen-quantity-db
+;         (prop/for-all [email commons/email-gen pw gen/string]
+;                       (let [user-map (user/create-user-map email pw default-role)
+;                             _ (:db-after (user/insert-user conn-datomic email (db/create-entity user-map)))
+;                             db-temp (:db-after (user/set-user-activated conn-datomic email))
+;                             user (user/get-user-by-username db-temp email)]
+;                         (and (= (db/username-kw user) email)
+;                              (= (db/activated-kw user) true)))))
+
+(defspec get-username-should-respect-pw-parameter
+         gen-quantity-db
          (prop/for-all [email commons/email-gen pw gen/string]
-                       (let [user (user/create-user-map email pw default-role)
-                              db_temp (:db-after (d/with base-db (db/create-entity user)))
-                              found-vec (db/find-all-from-column db_temp db/find-by-username-query)
-                              found-entity (db/get-entity-from-double-vec db_temp found-vec)]
-                         (and (= (db/username-kw found-entity) email)
-                              (= (db/activated-kw found-entity) false)
-                              (= (db/role-kw found-entity) default-role)
-                              (= (count found-vec) 1)
-                              ;(is (thrown? java.lang.AssertionError (user/insert-user conn-datomic email (db/create-entity user))))
-                              (= (not-empty (db/pw-kw found-entity)))
-                              (= (user/username-exists db_temp email))
-                              (= (user/username-exists db_temp (str "foo" email)) false)))))
+                                              (let [user-map (user/create-user-map email pw default-role)
+                                                    _ (:db-after (user/insert-user conn-datomic email (db/create-entity user-map)))
+                                                    db-temp (:db-after (user/set-user-activated conn-datomic email))
+                                                    user (user/get-user-by-username db-temp email)]
+                                                (and (= (db/username-kw user) email)
+                                                     (= (db/activated-kw user) true))))
 
-
-
-
-;(fact "insert one user should let me retrieve that one user"
-;      (let [email "sv@sv.de" pw "sv" role default-role
-;            user (user/create-user email pw role)
-;            found-entity (d/q '[:find ?c :in $ ?col :where [?c ?col]] (dbc) username-kw)]
-;        (count found-entity) => 1
-;        (username-kw (get-entity-from-double-vec found-entity)) => email
-;        (role-kw (get-entity-from-double-vec found-entity)) => role
-;        (activated-kw (get-entity-from-double-vec found-entity)) => false
-;        ))
-;
-;(fact "get a list of usernames and password (also test if usernames are unique)"
-;      (let [mails ["sv@sv.de" "bla@bla.de" "foo@bar.de" "msdf@mdf.com" "foo@bar.de"]]
-;        (doall (for [mail mails] (user/create-user mail "pw" :role)))
-;        (count (d/q '[:find ?c :in $ ?col :where [?c ?col]] (dbc) username-kw)) => 4
-;        (count (clojure.set/difference (set mails) (set (map first (user/get-user-password-role-map))))) => 0
-;        (count (set (map second (user/get-user-password-role-map)))) => 4
-;        (count (set (map #(nth % 2) (user/get-user-password-role-map)))) => 1
-;        ))
-;
-;(fact "username exists"
-;      (let [email "sv@sv.de" pw "sv" role default-role]
-;        (user/username-exists email) => false
-;        (user/create-user email pw role)
-;        (user/username-exists email) => true
-;        ))
-;
-;(fact "generate correct activation link"
-;      (let [activationid (generate-activation-id)]
-;        (generate-activation-link activationid) => (str "http://example.com/user/activate/" activationid )))
-;
-;(fact "activate user"
-;      (let [email "sv@sv.de" pw "sv" role default-role
-;            user (user/create-user email pw role)]
-;        (user/get-user-by-username email) => {username-kw email role-kw #{role} activated-kw false}
-;        (user/is-user-activated email) => false
-;        (user/set-user-activated email)
-;        (user/get-user-by-username email) => {username-kw email role-kw #{role} activated-kw true}
-;        (user/is-user-activated email) => true
-;        ))
-;
 ;(fact "get-username-should-add-password"
 ;      (let [email "sv@sv.de" pw "sv" role default-role
 ;            user (user/create-user email pw role)

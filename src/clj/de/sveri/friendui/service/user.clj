@@ -1,7 +1,7 @@
 (ns de.sveri.friendui.service.user
   (:require [de.sveri.friendui.models.db :refer [hostname mail-from]]
             [clojurewerkz.mailer.core :refer [deliver-email]]
-            [taoensso.timbre :as timbre] ))
+            [taoensso.timbre :as timbre]))
 
 
 
