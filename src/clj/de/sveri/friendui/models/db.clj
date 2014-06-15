@@ -1,7 +1,8 @@
 (ns de.sveri.friendui.models.db
   ;(:use [datomic.api :only [q db] :as d])
   (:require [de.sveri.friendui.globals :as globals]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [de.sveri.friendui.models.db :as db]))
 
 
 (def uri-datomic (:datomic-uri globals/friendui-config))
@@ -30,9 +31,14 @@
 
 (defn get-new-conn [] (d/db @conn-datomic))
 
-(defn create-entity [data-map]
+(defn create-entity
+  "Returns a vector that can be inserted into datomic. Adds a :db/id to the given data-map."
+  [data-map]
   (let [temp_id (d/tempid partition-id)]
     [(merge {:db/id temp_id} data-map)]))
+
+(defn insert-entity [db-conn data-map]
+  @(d/transact db-conn data-map))
 
 (defn find-by-column-and-search-string [db column search]
   (d/q '[:find ?c
@@ -42,8 +48,10 @@
      column
      search))
 
-(defn find-all-from-column [db column]
-  (d/q '[:find ?c :in $ ?column :where [?c ?column]] db column))
+(def find-by-username-query `[:find ?e :where [?e ~(get globals/friendui-config :username-kw)]])
+
+(defn find-all-from-column [db column-query]
+  (d/q column-query db))
 
 (defn get-entity-from-double-vec [db id]
   (d/entity db (ffirst id)))

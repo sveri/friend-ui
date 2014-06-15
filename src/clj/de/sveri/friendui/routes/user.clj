@@ -93,9 +93,9 @@
       (if send_email
         (let [activationid (userservice/generate-activation-id)]
           (do
-            (user/create-user email password "free" activationid)
+            (user/create-user-map email password "free" activationid)
             (userservice/send-activation-email email activationid)))
-        (user/create-user email password "free"))
+        (user/create-user-map email password "free"))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)

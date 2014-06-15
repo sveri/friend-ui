@@ -10,46 +10,35 @@
 
 (def activationid-kw :user/activationid)
 
-(defn username-exists [db-conn username]
-  (if (> (count (db/find-by-column-and-search-string db-conn db/username-kw username)) 0) true false))
+(defn username-exists [db-val username]
+  (> (count (db/find-by-column-and-search-string db-val db/username-kw username)) 0))
 
 (defn get-logged-in-username [] (:username (friend/current-authentication)))
 
-(defn- create-user-with-map [db-conn data-map]
-  (let [temp_id (d/tempid db/partition-id)]
-    @(d/transact db-conn [(merge {:db/id temp_id} data-map)])))
+(defn create-user-map
+  "First form creates a new user which is inactive.
+  Second form creates a new user with the given constraints if the username does not exist already."
+  ([email password role & [activationid]]
+   {:pre [(not (nil? (and email password role)))]}
+   (let [pw_crypted (creds/hash-bcrypt password)]
+     (create-user-map email (merge
+                          {db/username-kw  email
+                           db/pw-kw        pw_crypted
+                           db/activated-kw false
+                           db/role-kw      (keyword role)}
+                          (when activationid {activationid-kw activationid})))))
+  ([username data-map]
+   (merge {db/username-kw username} data-map)))
 
-;(defn create-user-with-mapp [data-map]
-;  (let [temp_id (d/tempid db/partition-id)]
-;    (merge {:db/id temp_id} data-map)))
-
-;(defn insert-user [data-map]
-;  @(d/transact db-conn (create-user-with-map data-map))
-
-(defn insert-user [data-map]
-  (let [temp_id (d/tempid db/partition-id)]
-    [(merge {:db/id temp_id} data-map)]))
-
-
-(defn create-user
-  "First form creates a new user with the given constraints if the username does not exist already.
-  Second form creates a new user which is inactive."
-  ([db-conn username data-map]
-  (if (not (username-exists username))
-    (create-user-with-map (d/db @db-conn) (merge {db/username-kw username} data-map))))
-  ([db-conn email password role & [activationid]]
-  (if (not (username-exists (d/db @db-conn) email))
-    (let [pw_crypted (creds/hash-bcrypt password)]
-      (create-user-with-map db-conn (merge
-                              {db/username-kw  email
-                               db/pw-kw        pw_crypted
-                               db/activated-kw false
-                               db/role-kw      (keyword role)}
-                              (when activationid {activationid-kw activationid})))))))
+(defn insert-user
+  "inserts a user only if the user does not exist already. Otherwise it throws an AssertionError."
+  [db-conn username data-map]
+  {:pre [(not (username-exists (d/db db-conn) username))]}
+  (db/insert-entity db-conn data-map))
 
 (defn get-user-password-role-map []
   (let [db (db/get-new-conn)
-         user-ids (db/find-all-from-column db db/username-kw)]
+        user-ids (db/find-all-from-column db db/username-kw)]
     (doall (for [id user-ids]
              (let [user (db/get-entity-from-vec db id)]
                [(db/username-kw user) (db/pw-kw user) (db/role-kw user)])))))
@@ -128,7 +117,7 @@
     (sort-by
       db/username-kw
       (mapv #(dissoc (into {} (d/touch (db/get-entity-from-vec db-conn %))) db/pw-kw)
-                                  (db/find-all-from-column db-conn db/username-kw)))))
+            (db/find-all-from-column db-conn db/username-kw)))))
 
 (defn get-user-role [username] (first (:user/role (get-user-by-username username))))
 
