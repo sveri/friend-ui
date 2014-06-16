@@ -2,7 +2,8 @@
   (:require [de.sveri.friendui.models.db :as db]
             [de.sveri.friendui.models.user :as user]
             [cemerick.friend :as friend]
-            [cemerick.friend.credentials :as creds]))
+            [cemerick.friend.credentials :as creds]
+            [datomic.api :as d]))
 
 (defn get-logged-in-username [] (:username (friend/current-authentication)))
 
@@ -24,6 +25,13 @@
   ([username data-map]
    (merge {db/username-kw username} data-map)))
 
+(defn get-user-for-activation-id
+  "Returns the user for a given activation id."
+  [db-conn id]
+  (let [user-entity (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn user/activationid-kw id))]
+    {:username (db/username-kw user-entity)
+     :roles    #{(db/role-kw user-entity)}}))
+
 (defn insert-user
   "inserts a user only if the user does not exist already. Otherwise it throws an AssertionError."
   [db-conn username data-map]
@@ -42,7 +50,7 @@
   if pw param is set, it will give the password back too in map"
   [db-val username & pw]
   (let [db-id (db/get-entity-from-double-vec db-val (db/find-by-column-and-search-string db-val db/username-kw username))
-        user (assoc (select-keys db-id db/all-namespaced-profile-keywords) db/role-kw (get-roles db-id))]
+        user (assoc (select-keys db-id db/all-namespaced-profile-keywords) db/role-kw (user/get-roles db-id))]
     (if pw
       (merge user (into {} [[:password (db/pw-kw db-id)]]))
       user)))
@@ -56,13 +64,6 @@
   (let [db-conn (db/get-new-conn)
         id (db/find-by-column-and-search-string db-conn user/activationid-kw activationid)]
     @(d/transact db/conn-datomic [{:db/id (ffirst id) db/activated-kw true}])))
-
-(defn login-user [username]
-  (if (is-user-activated? (get-user-by-username (db/get-new-conn) username))
-    (do
-      (let [db-conn (db/get-new-conn)
-            db-id (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username))]
-        {:username username :roles (get-roles db-id) :password (db/pw-kw db-id)}))))
 
 (defn update-user [username data]
   @(d/transact db/conn-datomic [(merge {:db/id [db/username-kw username]} data)]))

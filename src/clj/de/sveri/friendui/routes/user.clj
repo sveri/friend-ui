@@ -3,7 +3,7 @@
             [ring.util.response :refer [redirect]]
             [cemerick.friend :as friend]
             [clojure.string :as str]
-            [de.sveri.friendui.models.user :as user]
+            [de.sveri.friendui.models.api.user-api :as user-api]
             [de.sveri.friendui.models.db :as db]
             [de.sveri.friendui.views.admin-view :as admin]
             [noir.validation :as vali]
@@ -36,7 +36,7 @@
              [:id "An email address is required"])
   (vali/rule (vali/is-email? email)
              [:id "A valid email is required"])
-  (vali/rule (not (user/username-exists email))
+  (vali/rule (not (user-api/username-exists? (db/get-new-conn) email))
              [:id "This username exists in the database. Please choose another one."])
   (vali/rule (vali/min-length? pass 5)
              [:pass "Password must be at least 5 characters"])
@@ -45,11 +45,11 @@
   (not (vali/errors? :id :pass :confirm)))
 
 (defn activate-account [id]
-  (if (not (user/account-activated? id))
-    (user/activate-account id))
+  (if (not (user-api/account-activated? id))
+    (user-api/activate-account id))
   (friend/merge-authentication
     (redirect "/")
-    (user/get-user-for-activation-id id)))
+    (user-api/get-user-for-activation-id (db/get-new-conn) id)))
 
 
 (html/defsnippet account-created-snippet (str globals/template-path "account-created.html") [:div#account-created] [])
@@ -76,7 +76,7 @@
   (util/resp (globals/base-template
                {title-key   "User Administration"
                 content-key (admin/admin-enlive
-                              (let [users (user/get-all-users)
+                              (let [users (user-api/get-all-users)
                                     username-filter (:username-filter data)]
                                 (if username-filter
                                   (list-utils/filter-list users username-filter db/username-kw)
@@ -93,9 +93,9 @@
       (if send_email
         (let [activationid (userservice/generate-activation-id)]
           (do
-            (user/create-user-map email password "free" activationid)
+            (user-api/create-user-map email password "free" activationid)
             (userservice/send-activation-email email activationid)))
-        (user/create-user-map email password "free"))
+        (user-api/create-user-map email password "free"))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)
@@ -103,7 +103,7 @@
       (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error}))))
 
 (defn update-user [username role active]
-  (user/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
+  (user-api/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
 (compojure/defroutes user-routes

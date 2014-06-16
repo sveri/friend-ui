@@ -15,3 +15,5 @@
   ;                             { :id ":user/jirapassword" :id-kw :user/jirapassword :type "password" :label "Jira Password"}
   ;                             ]
   }
+
+;(22:25:42) tbaldridge: sveri: probably better to define a protocol, and then pass an instance to frendui. That way all the functions are in one thing, instead of having to pass multiple callbacks

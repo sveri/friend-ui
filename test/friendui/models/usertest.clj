@@ -1,6 +1,7 @@
 (ns friendui.models.usertest
   (:require [datomic.api :as d]
             [de.sveri.friendui.models.api.user-api :as user-api]
+            [de.sveri.friendui.models.user :as user]
             [de.sveri.friendui.models.db :as db]
             [de.sveri.friendui.service.user :as user-service]
             [cemerick.friend.credentials :as creds]
@@ -14,7 +15,7 @@
             [de.sveri.friendui.globals :as glob]))
 
 (def gen-quantity 100)
-(def gen-quantity-db 100)
+(def gen-quantity-db 5)
 
 (def default-role :free)
 
@@ -26,16 +27,19 @@
 
 (def conn-datomic (d/connect uri))
 
-
 @(d/transact conn-datomic schema-tx)
 
 (def base-db (d/db conn-datomic))
 
-;(deftest user-can-only-be-inserted-once
-;  (let [email "sv@sv.de" pw "sv"
-;        user (user-api/create-user-map email pw default-role)
-;        _ (:db-after (db/insert-entity conn-datomic (db/create-entity user)))]
-;      (is (thrown? java.lang.AssertionError (user-api/insert-user conn-datomic email (db/create-entity user))))))
+(defn catcher [f]
+  (try (f)
+       (catch Throwable t t)))
+
+(deftest user-can-only-be-inserted-once
+  (let [email "sv@sv.de" pw "sv"
+        user (user-api/create-user-map email pw default-role)
+        _ (:db-after (db/insert-entity conn-datomic (db/create-entity user)))]
+      (is (thrown? java.lang.AssertionError (user-api/insert-user conn-datomic email (db/create-entity user))))))
 
 (defspec insert-one-user-should-let-me-retrieve-that-one-user
          gen-quantity-db
@@ -48,7 +52,6 @@
                               (= (db/activated-kw found-entity) false)
                               (= (db/role-kw found-entity) default-role)
                               (= (count found-vec) 1)
-                              ;(is (thrown? java.lang.AssertionError (user-api/insert-user conn-datomic email (db/create-entity user))))
                               (= (not-empty (db/pw-kw found-entity)))
                               (= (user-api/username-exists? db_temp email))
                               (= (user-api/username-exists? db_temp (str "foo" email)) false)))))
@@ -57,14 +60,14 @@
          gen-quantity
          (prop/for-all [activationid (gen/not-empty gen/string-alpha-numeric)]
                        (= (user-service/generate-activation-link activationid)
-                          (str db/hostname "user-api/activate/" activationid))))
+                          (str db/hostname "user/activate/" activationid))))
 
 (defspec activate-user
          gen-quantity-db
          (prop/for-all [email commons/email-gen pw gen/string]
                        (let [user-map (user-api/create-user-map email pw default-role)
                              _ (:db-after (user-api/insert-user conn-datomic email (db/create-entity user-map)))
-                             db-temp (:db-after (user-api/set-user-activated conn-datomic email))
+                             db-temp (:db-after (user/set-user-activated conn-datomic email))
                              user (user-api/get-user-by-username db-temp email)]
                          (and (= (db/username-kw user) email)
                               (= (db/activated-kw user) true)))))
