@@ -46,9 +46,9 @@
 
 (defn activate-account [storage id]
   (if (not (user-api/account-activated? id))
-    (user-api/activate-account id))
+    (globals/activate-account storage id))
   (friend/merge-authentication
-    (redirect "/")
+    (redirect db/redirect-after-activation)
     (user-api/get-user-for-activation-id (db/get-new-conn) id)))
 
 
@@ -93,7 +93,7 @@
       (if send_email
         (let [activationid (userservice/generate-activation-id)]
           (do
-            (globals/create-user storage email password activationid)
+            (globals/create-user storage email password db/new-user-role activationid)
             (userservice/send-activation-email email activationid))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
