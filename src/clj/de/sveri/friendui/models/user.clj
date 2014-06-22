@@ -1,8 +1,6 @@
 (ns de.sveri.friendui.models.user
   (:use [datomic.api :only [q db] :as d])
   (:require [cemerick.friend :as friend]
-            (cemerick.friend [workflows :as workflows]
-                             [credentials :as creds])
             [de.sveri.friendui.models.db :as db]
             ))
 
@@ -26,15 +24,17 @@
 (defn set-user-activated [db-conn username]
   @(d/transact db-conn [{:db/id [db/username-kw username], db/activated-kw true}]))
 
-(defn is-user-activated? [user]
-  (if (= (db/activated-kw user) true) true false))
+;(defn is-user-activated? [user]
+;  (if (= (db/activated-kw user) true) true false))
 
-(defn login-user [username]
-  (if (is-user-activated? username)
-    (do
-      (let [db-conn (db/get-new-conn)
-            db-id (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username))]
-        {:username username :roles (get-roles db-id) :password (db/pw-kw db-id)}))))
+;(defn login-user [username]
+;  (println "activated?: " (is-user-activated? username))
+;  (println "activated?: " (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username)))
+;  (if (is-user-activated? username)
+;    (do
+;      (let [db-conn (db/get-new-conn)
+;            db-id (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username))]
+;        {:username username :roles (get-roles db-id) :password (db/pw-kw db-id)}))))
 
 
 ;(defn login-user [user]
@@ -45,9 +45,9 @@
 ;            db-id (db/get-entity-from-double-vec db-conn (db/find-by-column-and-search-string db-conn db/username-kw username))]
 ;        {:username username :roles (get-roles db-id) :password (db/pw-kw db-id)}))))
 
-(def friend-settings
-  {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
-   :workflows                 [(workflows/interactive-form)]
-   :login-uri                 "/user/login"
-   :unauthorized-redirect-uri "/user/login"
-   :default-landing-uri       "/"})
+;(def friend-settings
+;  {:credential-fn             (partial creds/bcrypt-credential-fn login-user)
+;   :workflows                 [(workflows/interactive-form)]
+;   :login-uri                 "/user/login"
+;   :unauthorized-redirect-uri "/user/login"
+;   :default-landing-uri       "/"})

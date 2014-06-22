@@ -10,6 +10,9 @@
 (defn username-exists? [db-val username]
   (> (count (db/find-by-column-and-search-string db-val db/username-kw username)) 0))
 
+(defn is-user-activated? [usermap]
+  (if (= (db/activated-kw usermap) true) true false))
+
 (defn create-user-map
   "First form creates a new user which is inactive.
   Second form creates a new user with the given constraints if the username does not exist already."

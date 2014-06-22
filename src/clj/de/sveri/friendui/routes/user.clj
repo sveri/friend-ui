@@ -44,7 +44,7 @@
              [:confirm "Entered passwords do not match"])
   (not (vali/errors? :id :pass :confirm)))
 
-(defn activate-account [id]
+(defn activate-account [storage id]
   (if (not (user-api/account-activated? id))
     (user-api/activate-account id))
   (friend/merge-authentication
@@ -87,15 +87,14 @@
   "Creates a new user in the database. Acts for both the signup and the administrator form.
   If send_email is not nil it will send an activation email to the given email adress with a link that the user can use
   to activate it's account."
-  [email password confirm succ-page error-page & [send_email]]
+  [storage email password confirm succ-page error-page & [send_email]]
   (if (validRegister? email password confirm)
     (do
       (if send_email
         (let [activationid (userservice/generate-activation-id)]
           (do
-            (user-api/create-user-map email password "free" activationid)
-            (userservice/send-activation-email email activationid)))
-        (user-api/create-user-map email password "free"))
+            (globals/create-user storage email password activationid)
+            (userservice/send-activation-email email activationid))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)
@@ -106,19 +105,24 @@
   (user-api/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
-(compojure/defroutes user-routes
-                     (GET "/user/login" [login_failed] (login login_failed))
-                     (GET "/user/signup" [] (signup))
-                     (POST "/user/signup" [email password confirm]
-                           (add-user email password confirm "/user/accountcreated" signup true))
-                     (GET "/user/accountcreated" [] (account-created))
-                     (GET "/user/activate/:id" [id] (activate-account id))
-                     (GET "/user/accountactivated" [] (account-activated))
-                     (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
-                     (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
-                     (POST "/user/add" [email password confirm]
-                           (friend/authorize #{:user/admin} (add-user email password confirm "/user/admin" admin-view)))
-                     (friend/logout (ANY "/user/logout" [] (redirect "/"))))
+(defn user-routes [storage]
+  (compojure/routes
+    (GET "/user/login" [login_failed] (login login_failed))
+    (GET "/user/signup" [] (signup))
+    (POST "/user/signup" [email password confirm]
+          (add-user storage email password confirm "/user/accountcreated" signup true))
+    (GET "/user/accountcreated" [] (account-created))
+    (GET "/user/activate/:id" [id] (activate-account storage id))
+    (GET "/user/accountactivated" [] (account-activated))
+    (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
+    (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
+    (POST "/user/add" [email password confirm]
+          (friend/authorize #{:user/admin} (add-user email password confirm "/user/admin" admin-view)))
+    (friend/logout (ANY "/user/logout" [] (redirect "/")))))
+;
+;(22:38:13) hiredman: sveri: type hinting using a protocol doesn't make sense, the constructor call for you deftype is wrong, using deftype for that is weird, etc, etc
+;(22:38:34) aconbere [~aconbere@71-212-34-18.tukw.qwest.net] hat den Raum betreten.
+;(22:38:45) noonian: sveri: when you define a protocol, the functions of the protocol are defined in that namespace, everything from other namespaces always needs to be either namespace qualified or referred to in order to be called
 
 ;took out profile capabilities for now
 

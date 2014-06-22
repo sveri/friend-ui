@@ -17,3 +17,10 @@
     (edn/read rdr)))
 
 (def friendui-config (from-edn friendui-config-name))
+
+
+(defprotocol FrienduiStorage
+  "Defines methods to acces user storage for retrieval and update."
+  (create-user [this email password activationid])
+  (activate-account [this activationid])
+  (get-all-users [this]))

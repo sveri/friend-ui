@@ -1,8 +1,7 @@
 (ns de.sveri.friendui.models.db
   ;(:use [datomic.api :only [q db] :as d])
   (:require [de.sveri.friendui.globals :as globals]
-            [datomic.api :as d]
-            [de.sveri.friendui.models.db :as db]))
+            [datomic.api :as d]))
 
 
 (def uri-datomic (:datomic-uri globals/friendui-config))
@@ -24,6 +23,8 @@
 (def conn-datomic (delay (d/connect uri-datomic)))
 
 (defn get-new-conn [] (d/db @conn-datomic))
+
+
 
 (defn create-entity
   "Returns a vector that can be inserted into datomic. Adds a :db/id to the given data-map."
