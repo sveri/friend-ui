@@ -2,6 +2,7 @@
   (:require [de.sveri.friendui.views.layout :as layout]
             [ring.util.response :refer [redirect]]
             [cemerick.friend :as friend]
+            [cemerick.friend.credentials :as creds]
             [clojure.string :as str]
             [de.sveri.friendui.models.api.user-api :as user-api]
             [de.sveri.friendui.models.db :as db]
@@ -72,11 +73,11 @@
 (defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
 (defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
 
-(defn admin-view [& [data]]
+(defn admin-view [storage & [data]]
   (util/resp (globals/base-template
                {title-key   "User Administration"
                 content-key (admin/admin-enlive
-                              (let [users (user-api/get-all-users)
+                              (let [users (globals/get-all-users storage)
                                     username-filter (:username-filter data)]
                                 (if username-filter
                                   (list-utils/filter-list users username-filter db/username-kw)
@@ -90,10 +91,11 @@
   [storage email password confirm succ-page error-page & [send_email]]
   (if (validRegister? email password confirm)
     (do
-      (if send_email
-        (let [activationid (userservice/generate-activation-id)]
-          (do
-            (globals/create-user storage email password db/new-user-role activationid)
+      (let [activationid (userservice/generate-activation-id)
+            pw_crypted (creds/hash-bcrypt password)]
+        (do
+          (globals/create-user storage email pw_crypted db/new-user-role activationid)
+          (if send_email
             (userservice/send-activation-email email activationid))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
@@ -101,8 +103,8 @@
           confirm-error (vali/on-error :confirm first)]
       (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error}))))
 
-(defn update-user [username role active]
-  (user-api/update-user username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
+(defn update-user [storage username role active]
+  (globals/update-user storage username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
 (defn user-routes [storage]
@@ -114,15 +116,13 @@
     (GET "/user/accountcreated" [] (account-created))
     (GET "/user/activate/:id" [id] (activate-account storage id))
     (GET "/user/accountactivated" [] (account-activated))
-    (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view {:username-filter filter})))
-    (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user username role active)))
+    (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view storage {:username-filter filter})))
+    (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user storage username role active)))
     (POST "/user/add" [email password confirm]
-          (friend/authorize #{:user/admin} (add-user email password confirm "/user/admin" admin-view)))
+          (friend/authorize #{:user/admin}
+                            (add-user storage email password confirm "/user/admin" (partial admin-view storage))))
     (friend/logout (ANY "/user/logout" [] (redirect "/")))))
-;
-;(22:38:13) hiredman: sveri: type hinting using a protocol doesn't make sense, the constructor call for you deftype is wrong, using deftype for that is weird, etc, etc
-;(22:38:34) aconbere [~aconbere@71-212-34-18.tukw.qwest.net] hat den Raum betreten.
-;(22:38:45) noonian: sveri: when you define a protocol, the functions of the protocol are defined in that namespace, everything from other namespaces always needs to be either namespace qualified or referred to in order to be called
+
 
 ;took out profile capabilities for now
 

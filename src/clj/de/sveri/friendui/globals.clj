@@ -21,6 +21,7 @@
 
 (defprotocol FrienduiStorage
   "Defines methods to acces user storage for retrieval and update."
-  (create-user [this email password activationid])
+  (create-user [this email password role activationid])
   (activate-account [this activationid])
-  (get-all-users [this]))
+  (get-all-users [this])
+  (update-user [this username data-map]))
