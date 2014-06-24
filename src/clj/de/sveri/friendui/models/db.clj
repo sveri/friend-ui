@@ -14,9 +14,10 @@
 (def hostname (:hostname globals/friendui-config))
 (def mail-from (:mail-from globals/friendui-config))
 (def available-roles (:available-roles globals/friendui-config))
-(def redirect-after-activation (:redirect-after-activation globals/friendui-config))
 (def new-user-role (:new-user-role globals/friendui-config))
 (def add-profile-fields (:additional-profile-fields globals/friendui-config))
+(def user-signup-redirect (:user-signup-redirect globals/friendui-config))
+(def account-activated-redirect (:account-activated-redirect globals/friendui-config))
 (def add-profile-keywords (map #(:id %) add-profile-fields))
 
 (def all-namespaced-profile-keywords

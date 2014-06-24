@@ -49,7 +49,7 @@
   (if (not (user-api/account-activated? id))
     (globals/activate-account storage id))
   (friend/merge-authentication
-    (redirect db/redirect-after-activation)
+    (redirect db/account-activated-redirect)
     (user-api/get-user-for-activation-id (db/get-new-conn) id)))
 
 
@@ -112,7 +112,7 @@
     (GET "/user/login" [login_failed] (login login_failed))
     (GET "/user/signup" [] (signup))
     (POST "/user/signup" [email password confirm]
-          (add-user storage email password confirm "/user/accountcreated" signup true))
+          (add-user storage email password confirm db/user-signup-redirect signup true))
     (GET "/user/accountcreated" [] (account-created))
     (GET "/user/activate/:id" [id] (activate-account storage id))
     (GET "/user/accountactivated" [] (account-activated))
