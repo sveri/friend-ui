@@ -1,11 +1,9 @@
 (ns de.sveri.friendui.routes.user
-  (:require [de.sveri.friendui.views.layout :as layout]
-            [ring.util.response :refer [redirect]]
+  (:require [ring.util.response :refer [redirect]]
             [cemerick.friend :as friend]
             [cemerick.friend.credentials :as creds]
             [clojure.string :as str]
-            [de.sveri.friendui.models.api.user-api :as user-api]
-            [de.sveri.friendui.models.db :as db]
+            [de.sveri.friendui.service.user :as user-api]
             [de.sveri.friendui.views.admin-view :as admin]
             [noir.validation :as vali]
             [net.cgrand.enlive-html :as html]
@@ -13,7 +11,6 @@
             [de.sveri.friendui.service.user :as userservice]
             [de.sveri.friendui.globals :as globals]
             [noir.response :as resp]
-            [datomic.api :as d]
             [de.sveri.clojure.commons.lists.util :as list-utils]
             [compojure.core :as compojure :refer [GET POST ANY]]))
 
@@ -32,12 +29,12 @@
 (html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
 
-(defn validRegister? [email pass confirm]
+(defn validRegister? [storage email pass confirm]
   (vali/rule (vali/has-value? email)
              [:id "An email address is required"])
   (vali/rule (vali/is-email? email)
              [:id "A valid email is required"])
-  (vali/rule (not (user-api/username-exists? (db/get-new-conn) email))
+  (vali/rule (not (globals/username-exists? storage email))
              [:id "This username exists in the database. Please choose another one."])
   (vali/rule (vali/min-length? pass 5)
              [:pass "Password must be at least 5 characters"])
@@ -46,11 +43,11 @@
   (not (vali/errors? :id :pass :confirm)))
 
 (defn activate-account [storage id]
-  (if (not (user-api/account-activated? id))
+  (if (not (globals/account-activated? storage id))
     (globals/activate-account storage id))
   (friend/merge-authentication
-    (redirect db/account-activated-redirect)
-    (user-api/get-user-for-activation-id (db/get-new-conn) id)))
+    (redirect globals/account-activated-redirect)
+    (globals/get-user-for-activation-id storage id)))
 
 
 (html/defsnippet account-created-snippet (str globals/template-path "account-created.html") [:div#account-created] [])
@@ -63,10 +60,11 @@
                                                     "Bad user / password combination or your account is not activated."))))
 
 (html/defsnippet signup-enlive (str globals/template-path "signup.html") [:div#signup]
-                 [{:keys [email-error pass-error confirm-error]}]
+                 [{:keys [email-error pass-error confirm-error email]}]
                  [:div#email-error] (when email-error (fn [_] (error-snippet email-error)))
                  [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
-                 [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error))))
+                 [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
+                 [:#email] (if email (html/set-attr :value email) identity))
 
 (defn login [& [login_failed]] (util/resp (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
 (defn signup [& [errors]] (util/resp (globals/base-template {title-key "Signup" content-key (signup-enlive errors)})))
@@ -80,7 +78,7 @@
                               (let [users (globals/get-all-users storage)
                                     username-filter (:username-filter data)]
                                 (if username-filter
-                                  (list-utils/filter-list users username-filter db/username-kw)
+                                  (list-utils/filter-list users username-filter globals/username-kw)
                                   users))
                               data)})))
 
@@ -89,38 +87,40 @@
   If send_email is not nil it will send an activation email to the given email adress with a link that the user can use
   to activate it's account."
   [storage email password confirm succ-page error-page & [send_email]]
-  (if (validRegister? email password confirm)
+  (if (validRegister? storage email password confirm)
     (do
       (let [activationid (userservice/generate-activation-id)
             pw_crypted (creds/hash-bcrypt password)]
         (do
-          (globals/create-user storage email pw_crypted db/new-user-role activationid)
+          (globals/create-user storage email pw_crypted globals/new-user-role activationid)
           (if send_email
             (userservice/send-activation-email email activationid))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)
           confirm-error (vali/on-error :confirm first)]
-      (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error}))))
+      (error-page {:email-error email-error :pass-error pass-error :confirm-error confirm-error :email email}))))
 
 (defn update-user [storage username role active]
-  (globals/update-user storage username {db/role-kw (create-keywordized-role-set role) db/activated-kw (map-checkbox-with-bool active)})
+  (globals/update-user storage username {globals/role-kw (create-keywordized-role-set role) globals/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
-(defn user-routes [storage]
+(defn friend-routes [storage]
   (compojure/routes
     (GET "/user/login" [login_failed] (login login_failed))
     (GET "/user/signup" [] (signup))
-    (POST "/user/signup" [email password confirm]
-          (add-user storage email password confirm db/user-signup-redirect signup true))
+    (vali/wrap-noir-validation
+      (POST "/user/signup" [email password confirm]
+            (add-user storage email password confirm globals/user-signup-redirect signup true)))
     (GET "/user/accountcreated" [] (account-created))
     (GET "/user/activate/:id" [id] (activate-account storage id))
     (GET "/user/accountactivated" [] (account-activated))
     (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view storage {:username-filter filter})))
     (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user storage username role active)))
-    (POST "/user/add" [email password confirm]
-          (friend/authorize #{:user/admin}
-                            (add-user storage email password confirm "/user/admin" (partial admin-view storage))))
+    (vali/wrap-noir-validation
+      (POST "/user/add" [email password confirm]
+            (friend/authorize #{:user/admin}
+                              (add-user storage email password confirm "/user/admin" (partial admin-view storage)))))
     (friend/logout (ANY "/user/logout" [] (redirect "/")))))
 
 
@@ -134,6 +134,6 @@
 ;
 ;(defn handle-profile [params]
 ;  (user/update-user
-;    (db/username-kw (friend/current-authentication))
-;    (select-keys params db/add-profile-keywords))
+;    (globals/username-kw (friend/current-authentication))
+;    (select-keys params globals/add-profile-keywords))
 ;  (profile))

@@ -1,12 +1,12 @@
-(defproject de.sveri/friendui "0.2.4"
+(defproject de.sveri/friendui "0.3.0"
   :description "A frontend for friend library using selmer and storing data in datomic"
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[com.datomic/datomic-pro "0.9.4556"]
+  :dependencies [[org.clojure/clojure "1.5.0"]
                  [midje "1.6.3" :scope "test"]
                  [org.clojure/core.cache "0.6.3"]
-                 [com.cemerick/friend "0.2.0"]
+                 [com.cemerick/friend "0.2.1"]
                  [clojurewerkz/mailer "1.0.0"]
                  [com.taoensso/timbre "3.2.1"]
                  [compojure "1.1.8"]

@@ -1,13 +1,11 @@
 (ns de.sveri.friendui.views.admin-view
   (:require [net.cgrand.enlive-html :as html]
-            [de.sveri.friendui.models.db :as db]
             [de.sveri.friendui.globals :as globals]))
 
 (def user-admin-table-header [{:header "Username"}
                               {:header "Role"}
                               {:header "Active"}
                               {:header ""}])
-
 
 (html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
@@ -20,13 +18,13 @@
 
 (html/defsnippet admin-user-table-content (str globals/template-path "admin.html") [(html/attr= :field "user-row")]
                  [user]
-                 [(html/attr= :field "username")] (html/content (db/username-kw user))
-                 [(html/attr= :field "username-hidden")] (html/set-attr :value (db/username-kw user))
+                 [(html/attr= :field "username")] (html/content (globals/username-kw user))
+                 [(html/attr= :field "username-hidden")] (html/set-attr :value (globals/username-kw user))
                  [(html/attr= :field "role-select")]
-                    (html/content (map #(role-option % (when (= (name (db/role-kw user)) (name %)) true))
-                                       db/available-roles))
-                 [(html/attr= :field "active") :input] (if (db/activated-kw user) (html/set-attr :checked true) identity)
-                 [(html/attr= :field "change_password")] (html/set-attr :href (str "/user/changepassword/" (db/username-kw user))))
+                    (html/content (map #(role-option % (when (= (name (globals/role-kw user)) (name %)) true))
+                                       globals/available-roles))
+                 [(html/attr= :field "active") :input] (if (globals/activated-kw user) (html/set-attr :checked true) identity)
+                 [(html/attr= :field "change_password")] (html/set-attr :href (str "/user/changepassword/" (globals/username-kw user))))
 
 (html/defsnippet admin-user-table-header (str globals/template-path "admin.html") [(html/attr= :field "header-entry")]
                  [{:keys [header]}]

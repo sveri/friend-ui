@@ -1,13 +1,16 @@
 # Warning
-Build 0.2.4 is broken, don't use it. I am working on a fix.
 This project is not used in a productive environment yet, so try it on your own risk.
 
 # friendui
 
 A Clojure library designed to wrap cemericks friend ([_https://github.com/cemerick/friend_]) library.
-It provides templates for login / signup with email activation.
-As backend it uses datomic (v0.9.4556) and enlive (v1.1.5) as templating library. 
-Bootstrap (> 3.0) is required too if you want it to look nice.
+It provides templates for login / signup with email activation. Additionally there is an admin interface where one can
+edit existing users or add new ones.
+
+## Dependencies
+* enlive (v1.1.5) as templating library. 
+* friend (0.2.0) 
+* Bootstrap (> 3.0) is required too if you want it to look nice.
 
 ## "Installation"
 
@@ -15,56 +18,95 @@ Friendui is available in Clojars. Add this `:dependency` to your Leiningen
 `project.clj`:
 
 ```clojure
-[de.sveri/friendui "0.2.4"]
-```
-
-Or, add this to your Maven project's `pom.xml`:
-
-```xml
-<repository>
-  <id>clojars</id>
-  <url>http://clojars.org/repo</url>
-</repository>
-
-<dependency>
-  <groupId>de.sveri</groupId>
-  <artifactId>friendui</artifactId>
-  <version>0.2.4</version>
-</dependency>
+[de.sveri/friendui "0.3.0"]
 ```
 
 ## Usage
 
-First you have to setup datomic. A sample schema is provided in [_https://github.com/sveri/friend-ui/blob/master/resources/schema/datomic-schema.edn_].
-
-Next a configuration file is needed in the classpath. The name has to be: friendui-config.edn.
-It could look like this:
+### Config
+Friendui looks for a configuration file named: friendui-config.edn in the classpath.
+It should look like this:
 
 ```clojure
 {
-  :datomic-uri "datomic:dev://localhost:4334/alias"
-  :partition-id :your-id
   :username-kw :user/email
   :pw-kw :user/password
   :activated-kw :user/activated
   :role-kw :user/role
-  :hostname "localhost.de" ;used for generation of activation link
-  :mail-from "from@from" ;used as from mail address
-  :base-template-content-key :main ; the key where the base template expects the page content
+  :hostname "http://yourhost.com/" ;used for generation of activation link
+  :mail-from "activation@yourhost.com" ;used as from mail address
+  :base-template-content-key :content ; the key where the base template expects the page content
   :base-template-title-key :title ; the key where the base template expects the page title
+  :available-roles [:user/admin :user/free]
+  :new-user-role :user/free
+  :user-signup-redirect "/user/accountcreated" ; default uri - is provided by friendui
+  :account-activated-redirect "/user/accountactivated" ; default uri - is provided by friendui   
   }
 ```
 
-The last thing to do is alter the root binding of the base template var like this:
+Then you have to alter the root binding of the base template var like this:
 
 ```clojure
+(:require [de.sveri.friendui.globals :as f-global])
+
 (html/deftemplate base (str template-path "base.html")
                   [{:keys [title main]}]
-                  [:#title] (util/maybe-content title)
-                  [:#content] (util/maybe-substitute main)
-                  )
+                  [:#title] (util/maybe-content title)      ; this corresponds to the :base-template-title-key key in the config
+                  [:#content] (util/maybe-substitute main)) ; this corresponds to the :base-template-content-key key in the config
 
-(alter-var-root #'user-global/base-template (fn [f] (partial base)))
+(alter-var-root #'f-global/base-template (fn [_] (partial base)))
+```
+
+### Protocol
+And finally you have to implement a protocol to retrieve and store user data:
+
+```clojure
+(defprotocol FrienduiStorage
+  "Defines methods to acces user storage for retrieval and update."
+  (account-activated? [this activationid]
+                      "Provides an id. Expects a boolean return value indicating if the user, belonging to the id is
+                      activated or not.")
+  (activate-account [this activationid]
+                    "Should set the user with the given id to activated. After this function was called successfully
+                    (account-activated?) should return true.")
+  (create-user [this email password role activationid]
+               "Should add a new user to your data store. Return value is not checked.")
+  (get-all-users [this]
+                 "Called from the admin view. Expects a list of all known users in this format:
+                 ({:user/activated false, :user/role :user/admin, :user/email unique-email@host.com}
+                 ...)
+                 Where each key corresponds to the configured keyword from friendui-config.edn")
+  (get-user-for-activation-id [this id]
+                              "Should return a map containing the username and role of this user like this:
+                              {:username username :roles #{role}}")
+  (update-user [this username data-map]
+               "Updates the user with the given data map of the form: {:user/activated boolean :user/role :user/free}")
+  (username-exists? [this username]
+                    "Expects true if the username exists already in the storage, false otherwise."))
+```
+
+Then you pass this storage to the friendui routes like this:
+```clojure
+(:require [de.sveri.friendui.routes.user :refer [friend-routes]])
+
+(defroutes allroutes
+    (friend-routes FrienduiStorageImpl)
+    ...)
+    
+(def app
+  (handler/site
+    (friend/authenticate allroutes friend-settings)))
+```
+
+### Your friend settings
+Of course you have to define your friend settings yourself in your application, this is an example of mine:
+```clojure
+(def friend-settings
+  {:credential-fn             (partial creds/bcrypt-credential-fn user/login-user)
+   :workflows                 [(workflows/interactive-form)]
+   :login-uri                 "/user/login"
+   :unauthorized-redirect-uri "/user/login"
+   :default-landing-uri       "/"})
 ```
 
 This should get you up and running.
@@ -80,15 +122,26 @@ This should get you up and running.
 (GET "/user/accountactivated")
 (GET "/user/admin" [filter])
 (POST "/user/update" [username role active])
-(POST "/user/add" [email password confirm])
+(POST "/user/add" [email password confirm]) ; used in admin view
 (ANY "/user/logout")
 ```
 
+## Screenshots
+
+![Alt Signup](/docs/signup.jpg "Signup")
+![Alt Signup Error](/docs/signup_error.jpg "Signup Error")
+![Alt Account Created](/docs/account_created.jpg "Account Created")
+![Alt Admin View](/docs/admin_view.jpg "Admin View")
+
 ## Version History
+**0.3.0** decoupled from datomic which caused a lot of API changes.
+
 **0.2.4** - Broken build - don't use it
 Added Administrator interface for users. User roles and activation status can be updated by administrators.
 New Users can be added by administrators.
 A filter is available for the user list
+
+**0.2.3** First working release with an implementation that depends on enlive and datomic.
 
 ## License
 
