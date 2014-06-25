@@ -21,6 +21,7 @@
 (def new-user-role (:new-user-role friendui-config))
 (def user-signup-redirect (:user-signup-redirect friendui-config))
 (def account-activated-redirect (:account-activated-redirect friendui-config))
+(def send-activation-email (:send-activation-email friendui-config))
 
 
 (defprotocol FrienduiStorage

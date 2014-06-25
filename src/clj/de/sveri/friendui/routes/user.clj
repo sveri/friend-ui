@@ -93,7 +93,7 @@
             pw_crypted (creds/hash-bcrypt password)]
         (do
           (globals/create-user storage email pw_crypted globals/new-user-role activationid)
-          (if send_email
+          (if (and send_email globals/send-activation-email)
             (userservice/send-activation-email email activationid))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)

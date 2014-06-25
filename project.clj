@@ -3,8 +3,7 @@
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.0"]
-                 [midje "1.6.3" :scope "test"]
+  :dependencies [[midje "1.6.3" :scope "test"]
                  [org.clojure/core.cache "0.6.3"]
                  [com.cemerick/friend "0.2.1"]
                  [clojurewerkz/mailer "1.0.0"]

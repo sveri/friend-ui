@@ -41,6 +41,7 @@ It should look like this:
   :new-user-role :user/free
   :user-signup-redirect "/user/accountcreated" ; default uri - is provided by friendui
   :account-activated-redirect "/user/accountactivated" ; default uri - is provided by friendui   
+  :send-activation-email true ; email on activation can be turned off to fit your needs
   }
 ```
 
@@ -56,6 +57,11 @@ Then you have to alter the root binding of the base template var like this:
 
 (alter-var-root #'f-global/base-template (fn [_] (partial base)))
 ```
+
+### E-Mail
+
+If you want to send an E-Mail on activation which the user can use to activate it's account sendmail is required on your 
+localhost with the SENDMAIL variable set.
 
 ### Protocol
 And finally you have to implement a protocol to retrieve and store user data:
@@ -128,9 +134,16 @@ This should get you up and running.
 
 ## Screenshots
 
+### Signup
 ![Alt Signup](/docs/signup.jpg "Signup")
+
+### Signup Error
 ![Alt Signup Error](/docs/signup_error.jpg "Signup Error")
+
+### Account Created
 ![Alt Account Created](/docs/account_created.jpg "Account Created")
+
+### Admin View
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
