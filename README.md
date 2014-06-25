@@ -9,7 +9,7 @@ edit existing users or add new ones.
 
 ## Dependencies
 * enlive (v1.1.5) as templating library. 
-* friend (0.2.0) 
+* friend (0.2.1) 
 * Bootstrap (> 3.0) is required too if you want it to look nice.
 
 ## "Installation"
