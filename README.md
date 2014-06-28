@@ -14,12 +14,8 @@ edit existing users or add new ones.
 
 ## "Installation"
 
-Friendui is available in Clojars. Add this `:dependency` to your Leiningen
-`project.clj`:
-
-```clojure
-[de.sveri/friendui "0.3.0"]
-```
+Friendui is available in Clojars:
+[![Clojars Project](http://clojars.org/de.sveri/friendui/latest-version.svg)](http://clojars.org/de.sveri/friendui)
 
 ## Usage
 
@@ -42,6 +38,7 @@ It should look like this:
   :user-signup-redirect "/user/accountcreated" ; default uri - is provided by friendui
   :account-activated-redirect "/user/accountactivated" ; default uri - is provided by friendui   
   :send-activation-email true ; email on activation can be turned off to fit your needs
+  :activation-mail-subject "Please activate your account."
   }
 ```
 
@@ -62,6 +59,8 @@ Then you have to alter the root binding of the base template var like this:
 
 If you want to send an E-Mail on activation which the user can use to activate it's account sendmail is required on your 
 localhost with the SENDMAIL variable set.
+Currently there is no other option available for sending mail. Of course you can send an E-Mail from within your application,
+as the activationid is provided in the storage protocol.
 
 ### Protocol
 And finally you have to implement a protocol to retrieve and store user data:
@@ -147,6 +146,8 @@ This should get you up and running.
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
+**0.3.1** Bugfix and documentation release
+
 **0.3.0** decoupled from datomic which caused a lot of API changes.
 
 **0.2.4** - Broken build - don't use it
