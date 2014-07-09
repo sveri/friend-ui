@@ -20,6 +20,7 @@
 (def user-signup-redirect (:user-signup-redirect friendui-config))
 (def account-activated-redirect (:account-activated-redirect friendui-config))
 (def send-activation-email (:send-activation-email friendui-config))
+(def activation-mail-subject (:activation-mail-subject friendui-config))
 
 
 (defprotocol FrienduiStorage

@@ -1,5 +1,5 @@
 (ns de.sveri.friendui.service.user
-  (:require [de.sveri.friendui.globals :refer [activated-kw hostname mail-from]]
+  (:require [de.sveri.friendui.globals :refer [activation-mail-subject activated-kw hostname mail-from]]
             [clojurewerkz.mailer.core :refer [deliver-email]]
             [taoensso.timbre :as timbre]
             [cemerick.friend :as friend]))
@@ -14,7 +14,7 @@
 
 (defn send-activation-email [email activationid]
   (try
-    (future (deliver-email {:from mail-from, :to [email] :subject "Please activate your ARP account."}
+    (future (deliver-email {:from mail-from, :to [email] :subject activation-mail-subject}
                    "templates/email/activation.mustache" {:activationlink (generate-activation-link activationid)}))
     (catch Exception e (timbre/error "Could not send email - Is the SENDMAIL variable set?\n" e))))
 
