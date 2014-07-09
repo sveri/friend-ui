@@ -1,7 +1,5 @@
 (ns de.sveri.friendui.globals
-  (:require [clojure.java.io :as io]
-            [clojure.edn :as edn]
-            [de.sveri.clojure.commons.files.edn :as commons]))
+  (:require [de.sveri.clojure.commons.files.edn :as commons]))
 
 (def template-path "templates/de/sveri/friendui/user/")
 
