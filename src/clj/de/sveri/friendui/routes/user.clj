@@ -70,6 +70,8 @@
 (defn signup [& [errors]] (util/resp (globals/base-template {title-key "Signup" content-key (signup-enlive errors)})))
 (defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
 (defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
+(defn unauthorized-access [] (util/resp (globals/base-template {title-key "Login"
+                                                                content-key "You don't have sufficient rights to view this page."})))
 
 (defn admin-view [storage & [data]]
   (util/resp (globals/base-template
