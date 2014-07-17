@@ -103,6 +103,7 @@ Then you pass this storage to the friendui routes like this:
     (friend/authenticate allroutes friend-settings)))
 ```
 
+
 ### Your friend settings
 Of course you have to define your friend settings yourself in your application, this is an example of mine:
 ```clojure
@@ -131,6 +132,16 @@ This should get you up and running.
 (ANY "/user/logout")
 ```
 
+## Callback functions
+Friendui provides support for callback functions. These are called under certain circumstances.  
+You can pass them as a map to the friend-routes function like this:  
+(friend-routes (db/FrienduiStorageImpl db-conn) {:signup-succ-func (fn [] (println "succ func"))})  
+  
+Currently these two are supported:  
+* signup-succ-func Called after a successfull signup - no arguments
+* activate-account-succ-func Called after a successful user activation, takes a user map as argument 
+(provides username and roles key)
+
 ## Screenshots
 
 ### Signup
@@ -146,6 +157,7 @@ This should get you up and running.
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
+**0.3.3** Added two callback functions
 **0.3.2** Added default unauthorized handler and an example storage protocol implementation at: https://github.com/sveri/friendui-datomic
 **0.3.1** Bugfix and documentation release
 

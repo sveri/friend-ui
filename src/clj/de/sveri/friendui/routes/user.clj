@@ -42,12 +42,14 @@
              [:confirm "Entered passwords do not match"])
   (not (vali/errors? :id :pass :confirm)))
 
-(defn activate-account [storage id]
+(defn activate-account [storage id & [{:keys [activate-account-succ-func]}]]
   (if (not (globals/account-activated? storage id))
     (globals/activate-account storage id))
   (friend/merge-authentication
     (redirect globals/account-activated-redirect)
-    (globals/get-user-for-activation-id storage id)))
+    (let [user (globals/get-user-for-activation-id storage id)]
+      (when activate-account-succ-func (activate-account-succ-func user))
+      user)))
 
 
 (html/defsnippet account-created-snippet (str globals/template-path "account-created.html") [:div#account-created] [])
@@ -88,7 +90,7 @@
   "Creates a new user in the database. Acts for both the signup and the administrator form.
   If send_email is not nil it will send an activation email to the given email adress with a link that the user can use
   to activate it's account."
-  [storage email password confirm succ-page error-page & [send_email]]
+  [storage email password confirm succ-page error-page send_email & [{:keys [signup-succ-func]}]]
   (if (validRegister? storage email password confirm)
     (do
       (let [activationid (userservice/generate-activation-id)
@@ -96,7 +98,8 @@
         (do
           (globals/create-user storage email pw_crypted globals/new-user-role activationid)
           (if (and send_email globals/send-activation-email)
-            (userservice/send-activation-email email activationid))))
+            (userservice/send-activation-email email activationid))
+          (when signup-succ-func (signup-succ-func))))
       (resp/redirect succ-page))
     (let [email-error (vali/on-error :id first)
           pass-error (vali/on-error :pass first)
@@ -107,15 +110,15 @@
   (globals/update-user storage username {globals/role-kw (create-keywordized-role-set role) globals/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
-(defn friend-routes [storage]
+(defn friend-routes [storage & [callback-map]]
   (compojure/routes
     (GET "/user/login" [login_failed] (login login_failed))
     (GET "/user/signup" [] (signup))
     (vali/wrap-noir-validation
       (POST "/user/signup" [email password confirm]
-            (add-user storage email password confirm globals/user-signup-redirect signup true)))
+            (add-user storage email password confirm globals/user-signup-redirect signup true callback-map)))
     (GET "/user/accountcreated" [] (account-created))
-    (GET "/user/activate/:id" [id] (activate-account storage id))
+    (GET "/user/activate/:id" [id] (activate-account storage id callback-map))
     (GET "/user/accountactivated" [] (account-activated))
     (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view storage {:username-filter filter})))
     (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user storage username role active)))
