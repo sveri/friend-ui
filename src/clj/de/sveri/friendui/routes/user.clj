@@ -31,15 +31,15 @@
 
 (defn validRegister? [storage email pass confirm]
   (vali/rule (vali/has-value? email)
-             [:id "An email address is required"])
+             [:id "An email address is required."])
   (vali/rule (vali/is-email? email)
-             [:id "A valid email is required"])
+             [:id "A valid email is required."])
   (vali/rule (not (globals/username-exists? storage email))
              [:id "This username exists in the database. Please choose another one."])
   (vali/rule (vali/min-length? pass 5)
-             [:pass "Password must be at least 5 characters"])
+             [:pass "Password must be at least 5 characters."])
   (vali/rule (= pass confirm)
-             [:confirm "Entered passwords do not match"])
+             [:confirm "Entered passwords do not match."])
   (not (vali/errors? :id :pass :confirm)))
 
 (defn activate-account [storage id & [{:keys [activate-account-succ-func]}]]
@@ -125,20 +125,5 @@
     (vali/wrap-noir-validation
       (POST "/user/add" [email password confirm]
             (friend/authorize #{:user/admin}
-                              (add-user storage email password confirm "/user/admin" (partial admin-view storage)))))
+                              (add-user storage email password confirm "/user/admin" (partial admin-view storage) false))))
     (friend/logout (ANY "/user/logout" [] (redirect "/")))))
-
-
-;took out profile capabilities for now
-
-;(GET "/user/profile" [] (friend/authenticated (profile)))
-;(POST "/user/profile" request (friend/authenticated (handle-profile (:params request))))
-;(defn profile []
-;  (layout/render "user/profile.html"
-;                 {:fields (user/get-profile-data (:username (friend/current-authentication)))}))
-;
-;(defn handle-profile [params]
-;  (user/update-user
-;    (globals/username-kw (friend/current-authentication))
-;    (select-keys params globals/add-profile-keywords))
-;  (profile))
