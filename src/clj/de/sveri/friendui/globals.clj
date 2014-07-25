@@ -44,4 +44,6 @@
   (update-user [this username data-map]
                "Updates the user with the given data map of the form: {:user/activated boolean :user/role :user/free}")
   (username-exists? [this username]
-                    "Expects true if the username exists already in the storage, false otherwise."))
+                    "Expects true if the username exists already in the storage, false otherwise.")
+  (get-loggedin-user-map [this]
+                         "Expects a map with the users metadata {username-kw username role-kw #{role} activated-kw true}"))

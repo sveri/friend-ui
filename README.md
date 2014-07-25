@@ -157,6 +157,7 @@ Currently these two are supported:
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
+
 **0.3.3** Added two callback functions
 **0.3.2** Added default unauthorized handler and an example storage protocol implementation at: https://github.com/sveri/friendui-datomic
 **0.3.1** Bugfix and documentation release

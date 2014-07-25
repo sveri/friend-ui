@@ -84,7 +84,8 @@
                                 (if username-filter
                                   (list-utils/filter-list users username-filter globals/username-kw)
                                   users))
-                              data)})))
+                              data)}
+               (globals/role-kw (globals/get-loggedin-user-map storage)))))
 
 (defn add-user
   "Creates a new user in the database. Acts for both the signup and the administrator form.
