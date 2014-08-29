@@ -42,6 +42,15 @@
              [:confirm "Entered passwords do not match."])
   (not (vali/errors? :id :pass :confirm)))
 
+(defn is-change-pw-valid? [storage old-pw pass confirm]
+  (vali/rule (creds/bcrypt-verify old-pw (globals/get-old-pw-hash storage))
+             [:old-pass "You entered the wrong current password."])
+  (vali/rule (vali/min-length? pass 5)
+             [:pass "Password must be at least 5 characters."])
+  (vali/rule (= pass confirm)
+             [:confirm "Entered passwords do not match."])
+  (not (vali/errors? :old-pass :pass :confirm)))
+
 (defn activate-account [storage id & [{:keys [activate-account-succ-func]}]]
   (if (not (globals/account-activated? storage id))
     (globals/activate-account storage id))
@@ -54,6 +63,12 @@
 
 (html/defsnippet account-created-snippet (str globals/template-path "account-created.html") [:div#account-created] [])
 (html/defsnippet account-activated-snippet (str globals/template-path "account-activated.html") [:div#account-activated] [])
+
+(html/defsnippet changepassword-snippet (str globals/template-path "change-password.html") [:#changepassword]
+                 [{:keys [old-pass pass conf]}]
+                 [:div#old-pass-error] (when old-pass (fn [_] (error-snippet old-pass)))
+                 [:div#pass-error] (when pass (fn [_] (error-snippet pass)))
+                 [:div#confirm-error] (when conf (fn [_] (error-snippet conf))))
 
 
 (html/defsnippet login-enlive (str globals/template-path "login.html") [:div#login]
@@ -111,6 +126,21 @@
   (globals/update-user storage username {globals/role-kw (create-keywordized-role-set role) globals/activated-kw (map-checkbox-with-bool active)})
   (resp/redirect "/user/admin"))
 
+(defn changepassword
+  ([storage] (changepassword storage nil))
+  ([storage errormap]
+   (util/resp (globals/base-template
+                   {title-key   "User Administration"
+                    content-key (changepassword-snippet errormap)}
+                   (globals/role-kw (globals/get-loggedin-user-map storage)))))
+  ([storage oldpassword password confirm]
+   (if (is-change-pw-valid? storage oldpassword password confirm)
+     (do (globals/change-password storage (creds/hash-bcrypt password))
+         (resp/redirect "/user/changepassword"))
+       (changepassword storage {:old-pass (vali/on-error :old-pass first)
+                                :pass (vali/on-error :pass first)
+                                :conf (vali/on-error :confirm first)}))))
+
 (defn friend-routes [storage & [callback-map]]
   (compojure/routes
     (GET "/user/login" [login_failed] (login login_failed))
@@ -121,6 +151,9 @@
     (GET "/user/accountcreated" [] (account-created))
     (GET "/user/activate/:id" [id] (activate-account storage id callback-map))
     (GET "/user/accountactivated" [] (account-activated))
+    (GET "/user/changepassword" [] (friend/authorize #{globals/new-user-role} (changepassword storage)))
+    (POST "/user/changepassword" [oldpassword password confirm]
+          (friend/authorize #{globals/new-user-role} (changepassword storage oldpassword password confirm)))
     (GET "/user/admin" [filter] (friend/authorize #{:user/admin} (admin-view storage {:username-filter filter})))
     (POST "/user/update" [username role active] (friend/authorize #{:user/admin} (update-user storage username role active)))
     (vali/wrap-noir-validation

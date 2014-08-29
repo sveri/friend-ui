@@ -46,4 +46,7 @@
   (username-exists? [this username]
                     "Expects true if the username exists already in the storage, false otherwise.")
   (get-loggedin-user-map [this]
-                         "Expects a map with the users metadata {username-kw username role-kw #{role} activated-kw true}"))
+                         "Expects a map with the users metadata {username-kw username role-kw #{role} activated-kw true}")
+  (get-old-pw-hash [this] "Should return the hashed password of the user.")
+  (change-password [this new-pw]
+                   "Changes the password of the user identified by username. new-pw will be hashed."))
