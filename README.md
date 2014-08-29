@@ -157,9 +157,11 @@ Currently these two are supported:
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
-
+**0.4.0** Added "get-loggedin-user-map" function
+Accountactivated page will redirect after three seconds to index page
 **0.3.3** Added two callback functions
-**0.3.2** Added default unauthorized handler and an example storage protocol implementation at: https://github.com/sveri/friendui-datomic
+**0.3.2** Added default unauthorized handler and an example storage protocol implementation at: 
+https://github.com/sveri/friendui-datomic
 **0.3.1** Bugfix and documentation release
 
 **0.3.0** decoupled from datomic which caused a lot of API changes.
