@@ -1,6 +1,7 @@
 (ns de.sveri.friendui.views.admin-view
   (:require [net.cgrand.enlive-html :as html]
-            [de.sveri.friendui.globals :as globals]))
+            [de.sveri.friendui.globals :as globals]
+            [ring.middleware.anti-forgery :as af]))
 
 (def user-admin-table-header [{:header "Username"}
                               {:header "Role"}
@@ -18,6 +19,7 @@
 
 (html/defsnippet admin-user-table-content (str globals/template-path "admin.html") [(html/attr= :field "user-row")]
                  [user]
+                 [(html/attr= :name "__anti-forgery-token")] (html/set-attr :value af/*anti-forgery-token*)
                  [(html/attr= :field "username")] (html/content (globals/username-kw user))
                  [(html/attr= :field "username-hidden")] (html/set-attr :value (globals/username-kw user))
                  [(html/attr= :field "role-select")]
@@ -31,8 +33,8 @@
                  [(html/attr= :field "header-entry")] (html/content header))
 
 (html/defsnippet add-user (str globals/template-path "signup.html") [:form]
-                 ;[]
                  [{:keys [email-error pass-error confirm-error]}]
+                 [(html/attr= :name "__anti-forgery-token")] (html/set-attr :value af/*anti-forgery-token*)
                  [:div#email-error] (when email-error (fn [_] (error-snippet email-error)))
                  [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
                  [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))

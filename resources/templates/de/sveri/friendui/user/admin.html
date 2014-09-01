@@ -46,6 +46,7 @@
         </div>
 
         <form field="user-row" class="tr" method="post" action="/user/update">
+            <input name="__anti-forgery-token" type="hidden"/>
             <input type="hidden" field="username-hidden" name="username" />
             <span field="username" class="td"></span>
             <span field="role" class="td">

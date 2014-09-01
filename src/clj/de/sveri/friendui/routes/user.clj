@@ -12,7 +12,9 @@
             [de.sveri.friendui.globals :as globals]
             [noir.response :as resp]
             [de.sveri.clojure.commons.lists.util :as list-utils]
-            [compojure.core :as compojure :refer [GET POST ANY]]))
+            [compojure.core :as compojure :refer [GET POST ANY]]
+            [ring.middleware.anti-forgery :as af]
+            ))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))
@@ -73,11 +75,13 @@
 
 (html/defsnippet login-enlive (str globals/template-path "login.html") [:div#login]
                  [error]
+                 [(html/attr= :name "__anti-forgery-token")] (html/set-attr :value af/*anti-forgery-token*)
                  [:div#error] (when error (fn [_] (error-snippet
                                                     "Bad user / password combination or your account is not activated."))))
 
 (html/defsnippet signup-enlive (str globals/template-path "signup.html") [:div#signup]
                  [{:keys [email-error pass-error confirm-error email]}]
+                 [(html/attr= :name "__anti-forgery-token")] (html/set-attr :value af/*anti-forgery-token*)
                  [:div#email-error] (when email-error (fn [_] (error-snippet email-error)))
                  [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
                  [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))

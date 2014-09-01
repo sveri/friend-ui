@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/core.cache "0.6.3"]
                  [com.cemerick/friend "0.2.1"]
                  [clojurewerkz/mailer "1.0.0"]
+                 [com.taoensso.forks/ring-anti-forgery "0.3.1"]
                  [com.taoensso/timbre "3.2.1"]
                  [compojure "1.1.8"]
                  [lib-noir "0.8.3"]
