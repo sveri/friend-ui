@@ -82,9 +82,10 @@
 (html/defsnippet signup-enlive (str globals/template-path "signup.html") [:div#signup]
                  [{:keys [email-error pass-error confirm-error email]}]
                  [(html/attr= :name "__anti-forgery-token")] (html/set-attr :value af/*anti-forgery-token*)
-                 [:div#email-error] (when email-error (fn [_] (error-snippet email-error)))
-                 [:div#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
-                 [:div#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
+                 [:#confirmation_message] (when globals/send-activation-email (html/remove-attr :style))
+                 [:#email-error] (when email-error (fn [_] (error-snippet email-error)))
+                 [:#pass-error] (when pass-error (fn [_] (error-snippet pass-error)))
+                 [:#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
                  [:#email] (if email (html/set-attr :value email) identity))
 
 (defn login [& [login_failed]] (util/resp (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
