@@ -11,7 +11,7 @@
                  [compojure "1.1.8"]
                  [lib-noir "0.8.3"]
                  [enlive "1.1.5"]
-                 [de.sveri/clojure-commons "0.1.3"]]
+                 [de.sveri/clojure-commons "0.1.4"]]
   :source-paths ["src/clj"]
   :test-paths ["test" "test/resources"]
   :deploy-repositories [["clojars-self" {:url           "https://clojars.org/repo"
