@@ -1,0 +1,22 @@
+{:username-kw :user/email
+  :pw-kw :user/password
+  :activated-kw :user/activated
+  :role-kw :user/role
+  :hostname "http://example.com/" ;used for generation of activation link
+
+  :send-activation-email true ; email on activation can be turned off to fit your needs
+  :mail-from "activation@example.com" ;used as from mail address
+  :mail-type :sendmail                                      ;the other option is :smtp, If you choose smtp
+    ;you will have to provide a map which will be passed directly to postal like this:
+    ; :smtp-data {:host "host" :port 25 ...} see: https://github.com/drewr/postal for more
+  :activation-mail-subject "Please activate your account."
+  :activation-mail-body "Please click on this link to activate your account: {{activationlink}}.Best Regards,Your Example-Team"
+
+  :base-template-content-key :content ; the key where the base template expects the page content
+  :base-template-title-key :title ; the key where the base template expects the page title
+  :account-activated-redirect "/user/accountactivated" ; default uri - is provided by friendui
+
+  :available-roles [:user/admin :user/free]
+  :new-user-role :user/free
+  :user-signup-redirect "/user/accountcreated" ; default uri - is provided by friendui
+  }

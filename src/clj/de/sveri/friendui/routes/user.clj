@@ -13,8 +13,7 @@
             [noir.response :as resp]
             [de.sveri.clojure.commons.lists.util :as list-utils]
             [compojure.core :as compojure :refer [GET POST ANY]]
-            [ring.middleware.anti-forgery :as af]
-            ))
+            [ring.middleware.anti-forgery :as af]))
 
 
 (def content-key (:base-template-content-key globals/friendui-config))

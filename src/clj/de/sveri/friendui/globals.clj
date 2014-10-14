@@ -15,13 +15,19 @@
 (def role-kw (:role-kw friendui-config))
 (def hostname (:hostname friendui-config))
 (def available-roles (:available-roles friendui-config))
+
 (def mail-from (:mail-from friendui-config))
+(def mail-type (:mail-type friendui-config))
+(def activation-mail-subject (:activation-mail-subject friendui-config))
+(def activation-mail-body (:activation-mail-body friendui-config))
+(def ^:const activation-placeholder "{{activationlink}}")
+(def smtp-data (get friendui-config :smtp-data {}))
+
+
 (def new-user-role (:new-user-role friendui-config))
 (def user-signup-redirect (:user-signup-redirect friendui-config))
 (def account-activated-redirect (:account-activated-redirect friendui-config))
 (def send-activation-email (:send-activation-email friendui-config))
-(def activation-mail-subject (:activation-mail-subject friendui-config))
-
 
 (defprotocol FrienduiStorage
   "Defines methods to acces user storage for retrieval and update."

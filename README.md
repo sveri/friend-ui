@@ -21,26 +21,8 @@ Friendui is available in Clojars:
 
 ### Config
 Friendui looks for a configuration file named: friendui-config.edn in the classpath.
-It should look like this:
+An example config can be found here: [_https://github.com/sveri/friend-ui/blob/master/dev-resources/friendui-config.edn_]
 
-```clojure
-{
-  :username-kw :user/email
-  :pw-kw :user/password
-  :activated-kw :user/activated
-  :role-kw :user/role
-  :hostname "http://yourhost.com/" ;used for generation of activation link
-  :mail-from "activation@yourhost.com" ;used as from mail address
-  :base-template-content-key :content ; the key where the base template expects the page content
-  :base-template-title-key :title ; the key where the base template expects the page title
-  :available-roles [:user/admin :user/free]
-  :new-user-role :user/free
-  :user-signup-redirect "/user/accountcreated" ; default uri - is provided by friendui
-  :account-activated-redirect "/user/accountactivated" ; default uri - is provided by friendui   
-  :send-activation-email true ; email on activation can be turned off to fit your needs
-  :activation-mail-subject "Please activate your account."
-  }
-```
 
 Then you have to alter the root binding of the base template var like this:
 
@@ -56,11 +38,9 @@ Then you have to alter the root binding of the base template var like this:
 ```
 
 ### E-Mail
-
-If you want to send an E-Mail on activation which the user can use to activate it's account sendmail is required on your 
-localhost with the SENDMAIL variable set.
-Currently there is no other option available for sending mail. Of course you can send an E-Mail from within your application,
-as the activationid is provided in the storage protocol.
+Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag
+1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.
+2. *:smtp* An extra *:smtp-data* map must be provided in the config which is passed as is to postal: [_https://github.com/drewr/postal_]
 
 ### Protocol
 And finally you have to implement a protocol to retrieve and store user data:
@@ -157,6 +137,8 @@ Currently these two are supported:
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
+**0.4.2** Added SMTP authentication in config
+Switched to postal
 **0.4.0** Added "get-loggedin-user-map" function
 Accountactivated page will redirect after three seconds to index page
 Added Antiforgery hidden input fields for forms
