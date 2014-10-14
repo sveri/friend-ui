@@ -38,8 +38,8 @@ Then you have to alter the root binding of the base template var like this:
 ```
 
 ### E-Mail
-Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag
-1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.
+Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag.  
+1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.  
 2. *:smtp* An extra *:smtp-data* map must be provided in the config which is passed as is to postal: [_https://github.com/drewr/postal_]
 
 ### Protocol
