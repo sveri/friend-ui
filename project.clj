@@ -1,4 +1,4 @@
-(defproject de.sveri/friendui "0.4.2"
+(defproject de.sveri/friendui "0.4.4"
   :description "A frontend for friend library using enlive."
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"
@@ -15,7 +15,6 @@
   :source-paths ["src/clj"]
   :test-paths ["test" "test/resources"]
   :profiles {:dev {:resource-paths ["dev-resources"]
-                   :dependencies [[org.clojure/clojure "1.6.0"]
-                                  [midje "1.6.3"]]}}
+                   :dependencies [[org.clojure/clojure "1.6.0"]]}}
   :deploy-repositories [["clojars-self" {:url           "https://clojars.org/repo"
                                          :sign-releases false}]])

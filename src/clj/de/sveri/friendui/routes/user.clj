@@ -55,11 +55,8 @@
 (defn activate-account [storage id & [{:keys [activate-account-succ-func]}]]
   (if (not (globals/account-activated? storage id))
     (globals/activate-account storage id))
-  (friend/merge-authentication
-    (redirect globals/account-activated-redirect)
-    (let [user (globals/get-user-for-activation-id storage id)]
-      (when activate-account-succ-func (activate-account-succ-func user))
-      user)))
+  (when activate-account-succ-func (activate-account-succ-func (globals/get-user-for-activation-id storage id)))
+  (redirect globals/account-activated-redirect))
 
 
 (html/defsnippet account-created-snippet (str globals/template-path "account-created.html") [:div#account-created] [])
@@ -87,15 +84,15 @@
                  [:#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
                  [:#email] (if email (html/set-attr :value email) identity))
 
-(defn login [& [login_failed]] (util/resp (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
-(defn signup [& [errors]] (util/resp (globals/base-template {title-key "Signup" content-key (signup-enlive errors)})))
-(defn account-created [] (util/resp (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
-(defn account-activated [] (util/resp (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
-(defn unauthorized-access [] (util/resp (globals/base-template {title-key "Login"
-                                                                content-key "You don't have sufficient rights to view this page."})))
+(defn login [& [login_failed]] (globals/base-template {title-key "Login" content-key (login-enlive login_failed)}))
+(defn signup [& [errors]] (globals/base-template {title-key "Signup" content-key (signup-enlive errors)}))
+(defn account-created [] (globals/base-template {title-key "Account Created" content-key (account-created-snippet)}))
+(defn account-activated [] (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)}))
+(defn unauthorized-access [] (globals/base-template {title-key   "Login"
+                                                                content-key "You don't have sufficient rights to view this page."}))
 
 (defn admin-view [storage & [data]]
-  (util/resp (globals/base-template
+  (globals/base-template
                {title-key   "User Administration"
                 content-key (admin/admin-enlive
                               (let [users (globals/get-all-users storage)
@@ -104,7 +101,7 @@
                                   (list-utils/filter-list users username-filter globals/username-kw)
                                   users))
                               data)}
-               (globals/role-kw (globals/get-loggedin-user-map storage)))))
+               (globals/role-kw (globals/get-loggedin-user-map storage))))
 
 (defn add-user
   "Creates a new user in the database. Acts for both the signup and the administrator form.
@@ -133,17 +130,17 @@
 (defn changepassword
   ([storage] (changepassword storage nil))
   ([storage errormap]
-   (util/resp (globals/base-template
-                   {title-key   "User Administration"
-                    content-key (changepassword-snippet errormap)}
-                   (globals/role-kw (globals/get-loggedin-user-map storage)))))
+   (globals/base-template
+                {title-key   "User Administration"
+                 content-key (changepassword-snippet errormap)}
+                (globals/role-kw (globals/get-loggedin-user-map storage))))
   ([storage oldpassword password confirm]
    (if (is-change-pw-valid? storage oldpassword password confirm)
      (do (globals/change-password storage (creds/hash-bcrypt password))
          (resp/redirect "/user/changepassword"))
-       (changepassword storage {:old-pass (vali/on-error :old-pass first)
-                                :pass (vali/on-error :pass first)
-                                :conf (vali/on-error :confirm first)}))))
+     (changepassword storage {:old-pass (vali/on-error :old-pass first)
+                              :pass     (vali/on-error :pass first)
+                              :conf     (vali/on-error :confirm first)}))))
 
 (defn friend-routes [storage & [callback-map]]
   (compojure/routes
