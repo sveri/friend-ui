@@ -7,7 +7,6 @@
             [de.sveri.friendui.views.admin-view :as admin]
             [noir.validation :as vali]
             [net.cgrand.enlive-html :as html]
-            [de.sveri.friendui.routes.util :as util]
             [de.sveri.friendui.service.user :as userservice]
             [de.sveri.friendui.globals :as globals]
             [noir.response :as resp]
