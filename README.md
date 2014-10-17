@@ -137,6 +137,7 @@ Currently these two are supported:
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
+**0.4.4** Removing utils and switching to clojure test
 **0.4.3** Do not authenticate with friend after account activation
 **0.4.2** Added SMTP authentication in config
 Switched to postal
