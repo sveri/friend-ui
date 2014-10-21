@@ -28,6 +28,9 @@
 
 (html/defsnippet error-snippet (str globals/template-path "error-snippet.html") [:div#error] [message]
                  [:#error] (html/content message))
+(html/defsnippet success-snippet (str globals/template-path "error-snippet.html") [:div#success] [message]
+                 [:#success] (html/content message))
+
 
 (defn validRegister? [storage email pass confirm]
   (vali/rule (vali/has-value? email)
@@ -62,7 +65,8 @@
 (html/defsnippet account-activated-snippet (str globals/template-path "account-activated.html") [:div#account-activated] [])
 
 (html/defsnippet changepassword-snippet (str globals/template-path "change-password.html") [:#changepassword]
-                 [{:keys [old-pass pass conf]}]
+                 [{:keys [success old-pass pass conf]}]
+                 [:div#ch-pw-succ] (when success (fn [_] (success-snippet success)))
                  [:div#old-pass-error] (when old-pass (fn [_] (error-snippet old-pass)))
                  [:div#pass-error] (when pass (fn [_] (error-snippet pass)))
                  [:div#confirm-error] (when conf (fn [_] (error-snippet conf))))
@@ -128,15 +132,16 @@
 
 (defn changepassword
   ([storage] (changepassword storage nil))
-  ([storage errormap]
+  ([storage msg-map]
    (globals/base-template
                 {title-key   "User Administration"
-                 content-key (changepassword-snippet errormap)}
+                 content-key (changepassword-snippet msg-map)}
                 (globals/role-kw (globals/get-loggedin-user-map storage))))
   ([storage oldpassword password confirm]
    (if (is-change-pw-valid? storage oldpassword password confirm)
      (do (globals/change-password storage (creds/hash-bcrypt password))
-         (resp/redirect "/user/changepassword"))
+         ;(resp/redirect "/user/changepassword")
+         (changepassword storage {:success "Successfully changed password."}))
      (changepassword storage {:old-pass (vali/on-error :old-pass first)
                               :pass     (vali/on-error :pass first)
                               :conf     (vali/on-error :confirm first)}))))
