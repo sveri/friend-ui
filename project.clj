@@ -1,4 +1,4 @@
-(defproject de.sveri/friendui "0.4.5"
+(defproject de.sveri/friendui "0.4.6"
   :description "A frontend for friend library using enlive."
   :url "https://github.com/sveri/friend-ui/"
   :license {:name "Eclipse Public License"

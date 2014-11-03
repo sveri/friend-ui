@@ -18,6 +18,9 @@
 (def content-key (:base-template-content-key globals/friendui-config))
 (def title-key (:base-template-title-key globals/friendui-config))
 
+(defn render [t]
+  (apply str t))
+
 (defn- map-checkbox-with-bool
   "Returns true if val is not nil"
   [val]
@@ -87,24 +90,24 @@
                  [:#confirm-error] (when confirm-error (fn [_] (error-snippet confirm-error)))
                  [:#email] (if email (html/set-attr :value email) identity))
 
-(defn login [& [login_failed]] (globals/base-template {title-key "Login" content-key (login-enlive login_failed)}))
-(defn signup [& [errors]] (globals/base-template {title-key "Signup" content-key (signup-enlive errors)}))
-(defn account-created [] (globals/base-template {title-key "Account Created" content-key (account-created-snippet)}))
-(defn account-activated [] (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)}))
-(defn unauthorized-access [] (globals/base-template {title-key   "Login"
-                                                                content-key "You don't have sufficient rights to view this page."}))
+(defn login [& [login_failed]] (render (globals/base-template {title-key "Login" content-key (login-enlive login_failed)})))
+(defn signup [& [errors]] (render (globals/base-template {title-key "Signup" content-key (signup-enlive errors)})))
+(defn account-created [] (render (globals/base-template {title-key "Account Created" content-key (account-created-snippet)})))
+(defn account-activated [] (render (globals/base-template {title-key "Account Activated" content-key (account-activated-snippet)})))
+(defn unauthorized-access [] (render (globals/base-template {title-key   "Login"
+                                                      content-key "You don't have sufficient rights to view this page."})))
 
 (defn admin-view [storage & [data]]
-  (globals/base-template
-               {title-key   "User Administration"
-                content-key (admin/admin-enlive
-                              (let [users (globals/get-all-users storage)
-                                    username-filter (:username-filter data)]
-                                (if username-filter
-                                  (list-utils/filter-list users username-filter globals/username-kw)
-                                  users))
-                              data)}
-               (globals/role-kw (globals/get-loggedin-user-map storage))))
+  (render (globals/base-template
+     {title-key   "User Administration"
+      content-key (admin/admin-enlive
+                    (let [users (globals/get-all-users storage)
+                          username-filter (:username-filter data)]
+                      (if username-filter
+                        (list-utils/filter-list users username-filter globals/username-kw)
+                        users))
+                    data)}
+     (globals/role-kw (globals/get-loggedin-user-map storage)))))
 
 (defn add-user
   "Creates a new user in the database. Acts for both the signup and the administrator form.
@@ -133,10 +136,10 @@
 (defn changepassword
   ([storage] (changepassword storage nil))
   ([storage msg-map]
-   (globals/base-template
-                {title-key   "User Administration"
-                 content-key (changepassword-snippet msg-map)}
-                (globals/role-kw (globals/get-loggedin-user-map storage))))
+   (render (globals/base-template
+      {title-key   "User Administration"
+       content-key (changepassword-snippet msg-map)}
+      (globals/role-kw (globals/get-loggedin-user-map storage)))))
   ([storage oldpassword password confirm]
    (if (is-change-pw-valid? storage oldpassword password confirm)
      (do (globals/change-password storage (creds/hash-bcrypt password))
