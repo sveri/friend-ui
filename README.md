@@ -17,6 +17,9 @@ edit existing users or add new ones.
 Friendui is available in Clojars:
 [![Clojars Project](http://clojars.org/de.sveri/friendui/latest-version.svg)](http://clojars.org/de.sveri/friendui)
 
+## Related
+There is an implementation for this which uses mysql as a backend: <https://github.com/sventechie/friendui-mysql>. If I understand this right it uses clojure.jdbc which means that postgresql and friends could be supported too.
+
 ## Usage
 
 ### Config
