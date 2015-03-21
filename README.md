@@ -1,9 +1,9 @@
 # Warning
-This project is not used in a productive environment yet, so try it on your own risk.
+This project is not used in a production environment yet, so try it at your own risk.
 
 # friendui
 
-A Clojure library designed to wrap cemerick's friend ([_https://github.com/cemerick/friend_]) library.
+A Clojure library designed to wrap cemerick's `friend` ([_https://github.com/cemerick/friend_]) library.
 It provides templates for login / signup with email activation. Additionally there is an admin interface where one can
 edit existing users or add new ones.
 
@@ -20,7 +20,7 @@ Friendui is available in Clojars:
 ## Usage
 
 ### Config
-Friendui looks for a configuration file named: friendui-config.edn in the classpath.
+Friendui looks for a configuration file named: `friendui-config.edn` in the classpath.
 An example config can be found here: [_https://github.com/sveri/friend-ui/blob/master/dev-resources/friendui-config.edn_]
 
 
@@ -38,16 +38,16 @@ Then you have to alter the root binding of the base template var like this:
 ```
 
 ### E-Mail
-Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag.
-1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.
-2. *:smtp* An extra *:smtp-data* map must be provided in the config which is passed as is to postal: [_https://github.com/drewr/postal_]
+Friendui supports two different ways of sending email which are configured in *friendui-config.edn* by the `:mail-type` tag.
+1. *:sendmail* Expects a running sendmail on `localhost` by which the mail will be delivered.
+2. *:smtp* An extra *:smtp-data* map must be provided in the config which is passed as is to `postal`: [_https://github.com/drewr/postal_]
 
 ### Protocol
 And finally you have to implement a protocol to retrieve and store user data:
 
 ```clojure
 (defprotocol FrienduiStorage
-  "Defines methods to acces user storage for retrieval and update."
+  "Defines methods to access user storage for retrieval and update."
   (account-activated? [this activationid]
                       "Provides an id. Expects a boolean return value indicating if the user, belonging to the id is
                       activated or not.")
@@ -70,7 +70,7 @@ And finally you have to implement a protocol to retrieve and store user data:
                     "Expects true if the username exists already in the storage, false otherwise."))
 ```
 
-Then you pass this storage to the friendui routes like this:
+Then you pass this storage to the `friendui` routes like this:
 ```clojure
 (:require [de.sveri.friendui.routes.user :refer [friend-routes]])
 
@@ -100,9 +100,9 @@ This should get you up and running.
 ## Provided Resources:
 
 ```clojure
-(GET "/user/login") ;expects a "username" / "password" combination
+(GET "/user/login")   ; expects a "username" / "password" combination
 (GET "/user/signup")
-(POST "/user/signup") ;expects email / password / confirm parameters
+(POST "/user/signup") ; expects email / password / confirm parameters
 (GET "/user/accountcreated")
 (GET "/user/activate/:id")
 (GET "/user/accountactivated")
@@ -114,15 +114,15 @@ This should get you up and running.
 
 ## Callback functions
 Friendui provides support for callback functions. These are called under certain circumstances.
-You can pass them as a map to the friend-routes function like this:
+You can pass them as a map to the `friend-routes` function like this:
 ```clojure
 (friend-routes (db/FrienduiStorageImpl db-conn) {:signup-succ-func (fn [] (println "succ func"))})
 ```
 
 Currently these two are supported:
-* signup-succ-func Called after a successfull signup - no arguments
-* activate-account-succ-func Called after a successful user activation, takes a user map as argument
-(provides username and roles key)
+* `signup-succ-func` Called after a successfull signup - no arguments
+* `activate-account-succ-func` Called after a successful user activation, takes a user map as argument
+(provides `username` and `roles` key)
 
 ## Screenshots
 
