@@ -3,13 +3,13 @@ This project is not used in a productive environment yet, so try it on your own 
 
 # friendui
 
-A Clojure library designed to wrap cemericks friend ([_https://github.com/cemerick/friend_]) library.
+A Clojure library designed to wrap cemerick's friend ([_https://github.com/cemerick/friend_]) library.
 It provides templates for login / signup with email activation. Additionally there is an admin interface where one can
 edit existing users or add new ones.
 
 ## Dependencies
-* enlive (v1.1.5) as templating library. 
-* friend (0.2.1) 
+* enlive (v1.1.5) as templating library.
+* friend (0.2.1)
 * Bootstrap (> 3.0) is required too if you want it to look nice.
 
 ## "Installation"
@@ -30,16 +30,16 @@ Then you have to alter the root binding of the base template var like this:
 (:require [de.sveri.friendui.globals :as f-global])
 
 (html/deftemplate base (str template-path "base.html")
-                  [{:keys [title main]}]
-                  [:#title] (util/maybe-content title)      ; this corresponds to the :base-template-title-key key in the config
-                  [:#content] (util/maybe-substitute main)) ; this corresponds to the :base-template-content-key key in the config
+                  [{:keys [title content]}]
+                  [:#title] (util/maybe-content title)         ; this corresponds to the :base-template-title-key key in the config
+                  [:#content] (util/maybe-substitute content)) ; this corresponds to the :base-template-content-key key in the config
 
 (alter-var-root #'f-global/base-template (fn [_] (partial base)))
 ```
 
 ### E-Mail
-Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag.  
-1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.  
+Friendui supports two different kinds of sending email which are configured in *friendui-config.edn* by the :mail-type tag.
+1. *:sendmail* Expects a running sendmail on localhost by which the mail will be delivered.
 2. *:smtp* An extra *:smtp-data* map must be provided in the config which is passed as is to postal: [_https://github.com/drewr/postal_]
 
 ### Protocol
@@ -77,7 +77,7 @@ Then you pass this storage to the friendui routes like this:
 (defroutes allroutes
     (friend-routes FrienduiStorageImpl)
     ...)
-    
+
 (def app
   (handler/site
     (friend/authenticate allroutes friend-settings)))
@@ -113,13 +113,15 @@ This should get you up and running.
 ```
 
 ## Callback functions
-Friendui provides support for callback functions. These are called under certain circumstances.  
-You can pass them as a map to the friend-routes function like this:  
-(friend-routes (db/FrienduiStorageImpl db-conn) {:signup-succ-func (fn [] (println "succ func"))})  
-  
-Currently these two are supported:  
+Friendui provides support for callback functions. These are called under certain circumstances.
+You can pass them as a map to the friend-routes function like this:
+```clojure
+(friend-routes (db/FrienduiStorageImpl db-conn) {:signup-succ-func (fn [] (println "succ func"))})
+```
+
+Currently these two are supported:
 * signup-succ-func Called after a successfull signup - no arguments
-* activate-account-succ-func Called after a successful user activation, takes a user map as argument 
+* activate-account-succ-func Called after a successful user activation, takes a user map as argument
 (provides username and roles key)
 
 ## Screenshots
@@ -137,29 +139,30 @@ Currently these two are supported:
 ![Alt Admin View](/docs/admin_view.jpg "Admin View")
 
 ## Version History
-**0.4.6** rendering with (apply str again
-**0.4.5** Added success message when pw was changed
-**0.4.4** Removing utils and switching to clojure test
-**0.4.3** Do not authenticate with friend after account activation
-**0.4.2** Added SMTP authentication in config
-Switched to postal
-**0.4.0** Added "get-loggedin-user-map" function
-Accountactivated page will redirect after three seconds to index page
-Added Antiforgery hidden input fields for forms
- 
-**0.3.3** Added two callback functions
-**0.3.2** Added default unauthorized handler and an example storage protocol implementation at: 
-https://github.com/sveri/friendui-datomic
-**0.3.1** Bugfix and documentation release
+* **0.4.6** rendering with `(apply str` again
+* **0.4.5** Added success message when password was changed
+* **0.4.4** Removing utils and switching to clojure test
+* **0.4.3** Do not authenticate with friend after account activation
+* **0.4.2** Added SMTP authentication in config
+  * Switched to `postal`
+* **0.4.0** Added `get-loggedin-user-map` function
+  * `accountactivated` page will redirect after three seconds to index page
+  * Added anti-forgery hidden input fields for forms
 
-**0.3.0** decoupled from datomic which caused a lot of API changes.
+* **0.3.3** Added two callback functions
+* **0.3.2** Added default unauthorized handler and an example storage protocol implementation at:
+[sveri/friendui-datomic](https://github.com/sveri/friendui-datomic)
+* **0.3.1** Bugfix and documentation release
 
-**0.2.4** - Broken build - don't use it
-Added Administrator interface for users. User roles and activation status can be updated by administrators.
-New Users can be added by administrators.
-A filter is available for the user list
+* **0.3.0** decoupled from Datomic which caused a lot of API changes.
 
-**0.2.3** First working release with an implementation that depends on enlive and datomic.
+* **0.2.4** - Broken build - don't use it
+  * Added Administrator interface for users.
+  * User roles and activation status can be updated by administrators.
+  * New Users can be added by administrators.
+  * A filter is available for the user list
+
+* **0.2.3** First working release with an implementation that dependson `enlive` and Datomic.
 
 ## License
 
