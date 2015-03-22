@@ -18,7 +18,7 @@ Friendui is available in Clojars:
 [![Clojars Project](http://clojars.org/de.sveri/friendui/latest-version.svg)](http://clojars.org/de.sveri/friendui)
 
 ## Related
-There is an implementation for this which uses mysql as a backend: <https://github.com/sventechie/friendui-mysql>. If I understand this right it uses clojure.jdbc which means that postgresql and friends could be supported too.
+There is an implementation for this which uses SQL Korma as a backend: <https://github.com/sventechie/friendui-sql>. It uses JDBC; MySQL and PostgreSQL schemas are provided, and other DBs could be supported too if you customize the schemas.
 
 ## Usage
 
